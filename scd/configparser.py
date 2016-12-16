@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 import collections
 import logging
 
+import six
+
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
 
@@ -53,6 +55,8 @@ def get_parsers():
 
 def parse(fileobj):
     content = fileobj.read()
+    if not isinstance(content, six.string_types):
+        content = content.decode("utf-8")
 
     for parser in get_parsers():
         try:
