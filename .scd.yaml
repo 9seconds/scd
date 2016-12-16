@@ -1,0 +1,19 @@
+version: 0.1.0
+scheme: semver  # pep440
+
+search_patterns:
+  basic: "\\d\\d\\d"
+  advanced: "\\sdfas\\df\\sdf"
+
+replacement_patterns:
+  full: "{major}.{minor}.{patch}"
+  basic: "{major}.{minor}"
+
+files:
+  - filename: setup.py
+    state: post
+    replacements:
+      - search: basic
+        replace: basic
+      - search_raw: "sadfsadfs"
+        replace_raw: "sdfsdfsdfsdf"

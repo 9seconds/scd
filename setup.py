@@ -6,6 +6,8 @@ import setuptools
 
 REQUIREMENTS = [
     "six >= 1.10"
+    "packaging",
+    "semver"
 ]
 """Requirements for scd project."""
 

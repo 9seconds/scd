@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
 
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import argparse
 import logging
+import os
 import sys
+
+import six
+
+import scd.configparser
 
 
 DESCRIPTION = """
@@ -17,10 +26,39 @@ https://github.com/9seconds/scd
 """
 """Epilog for the argparser."""
 
+OPTIONS = None
+"""Commandline parameters."""
 
+
+def catch_exceptions(func):
+    @six.wraps(func)
+    def decorator():
+        try:
+            func()
+        except Exception as exc:
+            if OPTIONS:
+                if OPTIONS.debug:
+                    logging.exception(exc)
+                else:
+                    print(exc, file=sys.stderr)
+            return os.EX_SOFTWARE
+
+        return os.EX_OK
+
+    return decorator
+
+
+@catch_exceptions
 def main():
-    options = get_options()
-    configure_logging(options)
+    global OPTIONS
+
+    OPTIONS = get_options()
+    configure_logging(OPTIONS)
+
+    logging.debug("Options: %s", OPTIONS)
+
+    config = scd.configparser.parse(OPTIONS.config)
+    print(config)
 
 
 def get_options():
