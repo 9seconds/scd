@@ -13,7 +13,7 @@ REQUIREMENTS = [
 setuptools.setup(
     name="scd",
     description="Something Completely different",
-    long_description="",  # TODO
+    long_description="",
     author="Sergey Arkhipov",
     author_email="nineseconds@yandex.ru",
     maintainer="Sergey Arkhipov",
@@ -27,6 +27,9 @@ setuptools.setup(
         "yaml": ["PyYAML ~= 3.10"],
         "toml": ["toml ~= 0.9.2"],
         "simplejson": ["simplejson"]
+    },
+    entry_points={
+        "console_scripts": ["scd = scd.main:main"]
     },
     setup_requires=["setuptools_scm"],
     use_scm_version={"root": ".", "relative_to": __file__},
