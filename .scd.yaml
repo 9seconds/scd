@@ -23,6 +23,10 @@ replacement_patterns:
   full: "{major}.{minor}.{patch}"
   basic: "{major}.{minor}"
 
+defaults:
+  search: basic
+  replacement: full
+
 files:
   - filename: setup.py
     replacements:
