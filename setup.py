@@ -32,7 +32,11 @@ setuptools.setup(
         "simplejson": ["simplejson"]
     },
     entry_points={
-        "console_scripts": ["scd = scd.main:main"]
+        "console_scripts": ["scd = scd.main:main"],
+        "scd.version": [
+            "semver = scd.version:SemVer",
+            "pep440 = scd.version:PEP440"
+        ]
     },
     setup_requires=["setuptools_scm"],
     use_scm_version={"root": ".", "relative_to": __file__},
