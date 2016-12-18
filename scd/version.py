@@ -169,7 +169,8 @@ class GitSemVer(Semver):
         super(GitSemVer, self).__init__(config)
 
         git_dir = os.path.join(self._config.project_directory, ".git")
-        self.distance = git_distance(git_dir)
+        git_matcher = self._config.raw["version"].get("tag_glob", "v*")
+        self.distance = git_distance(git_dir, git_matcher)
         self.tag = git_tag(git_dir)
 
     @property
@@ -332,7 +333,8 @@ class GitPEP440(PEP440):
         super(GitPEP440, self).__init__(config)
 
         git_dir = os.path.join(self._config.project_directory, ".git")
-        self.distance = git_distance(git_dir)
+        git_matcher = self._config.raw["version"].get("tag_glob", "v*")
+        self.distance = git_distance(git_dir, git_matcher)
         self.tag = git_tag(git_dir)
 
     @property
