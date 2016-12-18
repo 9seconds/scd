@@ -8,11 +8,12 @@ from __future__ import unicode_literals
 import argparse
 import logging
 import os
+import os.path
 import sys
 
 import six
 
-import scd.configparser
+import scd.config
 
 
 DESCRIPTION = """
@@ -57,8 +58,9 @@ def main():
 
     logging.debug("Options: %s", OPTIONS)
 
-    config = scd.configparser.parse(OPTIONS.config)
-    print(config)
+    raw_config = scd.config.parse(OPTIONS.config)
+    config = scd.config.Config(OPTIONS.config.name, raw_config)
+    print(config.files_raw)
 
 
 def get_options():
@@ -82,6 +84,7 @@ def get_options():
         metavar="CONFIG_PATH",
         nargs=argparse.OPTIONAL,
         type=argparse.FileType("rt"),
+        default=".scd.yaml",
         help="Path to the config.")
     parser.add_argument(
         "files",

@@ -7,11 +7,35 @@ from __future__ import unicode_literals
 
 import collections
 import logging
+import os.path
 
 import six
 
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
+
+
+@six.python_2_unicode_compatible
+class Config(object):
+
+    def __init__(self, configpath, config):
+        self.raw = config
+        self.configpath = os.path.abspath(configpath)
+
+    @property
+    def project_directory(self):
+        return os.path.dirname(self.configpath)
+
+    @property
+    def files_raw(self):
+        return {
+            os.path.join(self.project_directory, v["filename"]):
+            v["replacements"] for v in self.raw["files"]}
+
+    def __str__(self):
+        return "<Config(path={0.configpath}, raw={0.raw})".format(self)
+
+    __repr__ = __str__
 
 
 def get_parsers():

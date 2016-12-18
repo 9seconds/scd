@@ -1,17 +1,30 @@
-version: 0.1.0
-scheme: semver  # pep440
+version:
+  scheme: semver
+  number: 0.1.0
 
 search_patterns:
   basic: "\\d\\d\\d"
   advanced: "\\sdfas\\df\\sdf"
 
+# Available replacements:
+#   - major
+#   - minor
+#   - patch
+#   - next_major
+#   - next_minor
+#   - next_patch
+#   - dev
+#   - next_dev
+#   - post
+#   - next_post
+#   - pre
+#   - next_pre
 replacement_patterns:
   full: "{major}.{minor}.{patch}"
   basic: "{major}.{minor}"
 
 files:
   - filename: setup.py
-    state: post
     replacements:
       - search: basic
         replace: basic
