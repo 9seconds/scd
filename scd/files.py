@@ -65,7 +65,7 @@ class File(object):
 
     @property
     def default_search_pattern(self):
-        return self.all_search_pattern[self.config.raw["defaults"]["search"]]
+        return self.all_search_patterns[self.config.raw["defaults"]["search"]]
 
     @property
     def default_replace_pattern(self):
@@ -77,6 +77,12 @@ class File(object):
         patterns = []
 
         for item in self.data["replacements"]:
+            if item == "default":
+                patterns.append(SearchReplace(
+                    self.default_search_pattern,
+                    self.default_replace_pattern))
+                continue
+
             if "search_raw" in item:
                 search_pattern = re.compile(item["search_raw"])
             elif "search" in item:
