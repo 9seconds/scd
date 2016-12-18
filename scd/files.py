@@ -64,6 +64,15 @@ class File(object):
         return patterns
 
     @property
+    def default_search_pattern(self):
+        return self.all_search_pattern[self.config.raw["defaults"]["search"]]
+
+    @property
+    def default_replace_pattern(self):
+        return self.all_replacements[
+            self.config.raw["defaults"]["replacement"]]
+
+    @property
     def patterns(self):
         patterns = []
 
@@ -73,17 +82,14 @@ class File(object):
             elif "search" in item:
                 search_pattern = self.all_search_patterns[item["search"]]
             else:
-                raise KeyError(
-                    "Unknown search pattern for {0}".format(self.filename))
+                search_pattern = self.default_search_pattern
 
             if "replace_raw" in item:
                 replacement_pattern = make_template(item["replace_raw"])
             elif "replace" in item:
                 replacement_pattern = self.all_replacements[item["replace"]]
             else:
-                raise KeyError(
-                    "Unknown replacement pattern for {0}".format(self.filename)
-                )
+                replacement_pattern = self.default_replace_pattern
 
             patterns.append(SearchReplace(search_pattern, replacement_pattern))
 
