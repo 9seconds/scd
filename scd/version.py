@@ -6,19 +6,53 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import abc
+import logging
+import os
+import os.path
 import re
 
 import packaging.version
 import semver
 import six
 
+import scd.utils
+
+
+def git_distance(git_dir, matcher="v*"):
+    command = ["git", "--git-dir", git_dir,
+               "describe", "--tags", "--match", matcher]
+    try:
+        result = scd.utils.execute(command)
+    except ValueError:
+        return None
+
+    output = result["stdout"][0]
+    try:
+        distance = output.rsplit("-", 2)[1]
+        return int(distance)
+    except Exception as exc:
+        logging.warning("Cannot parse git result %s: %s", distance, exc)
+        return None
+
+
+def git_tag(git_dir):
+    command = ["git", "--git-dir", git_dir, "rev-parse", "--short", "HEAD"]
+
+    try:
+        result = scd.utils.execute(command)
+    except ValueError:
+        return None
+
+    return result["stdout"][0]
+
 
 @six.python_2_unicode_compatible
 @six.add_metaclass(abc.ABCMeta)
 class Version(object):
 
-    def __init__(self, base_number):
-        self.base_number = six.text_type(base_number)
+    def __init__(self, config):
+        self.base_number = six.text_type(config.version_number)
+        self._config = config
 
     def __str__(self):
         return "<{0.__class__.__name__}(base_number={0.base_number})>".format(
@@ -51,8 +85,8 @@ class Semver(Version):
     def prev_text_version(cls, version):
         return max(0, cls.parse_text_version(version) - 1)
 
-    def __init__(self, base_number):
-        super(Semver, self).__init__(base_number)
+    def __init__(self, config):
+        super(Semver, self).__init__(config)
 
         self.parsed = semver.parse_version_info(self.base_number)
 
@@ -129,11 +163,40 @@ class Semver(Version):
             self.build)
 
 
+class GitSemVer(Semver):
+
+    def __init__(self, config):
+        super(GitSemVer, self).__init__(config)
+
+        git_dir = os.path.join(self._config.project_directory, ".git")
+        self.distance = git_distance(git_dir)
+        self.tag = git_tag(git_dir)
+
+    @property
+    def prerelease(self):
+        if self.distance is not None:
+            return self.distance
+
+        return super(GitSemVer, self).prerelease
+
+    @property
+    def build(self):
+        return self.tag or ""
+
+    @property
+    def next_build(self):
+        return ""
+
+    @property
+    def prev_build(self):
+        return ""
+
+
 @six.python_2_unicode_compatible
 class PEP440(Version):
 
-    def __init__(self, base_number):
-        super(PEP440, self).__init__(base_number)
+    def __init__(self, config):
+        super(PEP440, self).__init__(config)
 
         self.parsed = packaging.version.parse(self.base_number)._version
         if isinstance(self.parsed, six.string_types):
@@ -261,3 +324,34 @@ class PEP440(Version):
     @property
     def local(self):
         return ".".join(self.parsed.local or [])
+
+
+class GitPEP440(PEP440):
+
+    def __init__(self, config):
+        super(GitPEP440, self).__init__(config)
+
+        git_dir = os.path.join(self._config.project_directory, ".git")
+        self.distance = git_distance(git_dir)
+        self.tag = git_tag(git_dir)
+
+    @property
+    def dev(self):
+        return self.distance or ""
+
+    @property
+    def prev_dev(self):
+        return ""
+
+    @property
+    def next_dev(self):
+        return ""
+
+    @property
+    def local(self):
+        if self.tag:
+            local = self.parsed.local or []
+            local.insert(0, self.tag)
+            return ".".join(local)
+
+        return super(GitPEP440, self).local

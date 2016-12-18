@@ -27,6 +27,14 @@ class Config(object):
         return os.path.dirname(self.configpath)
 
     @property
+    def version_scheme(self):
+        return self.raw["version"].get("scheme", "semver")
+
+    @property
+    def version_number(self):
+        return self.raw["version"]["number"]
+
+    @property
     def files_raw(self):
         return {
             os.path.join(self.project_directory, v["filename"]):
@@ -84,8 +92,11 @@ def parse(fileobj):
 
     for parser in get_parsers():
         try:
-            return parser.func(content)
+            parsed = parser.func(content)
+            break
         except Exception as exc:
             logging.warning("Cannot parse %s: %s", parser.name, exc)
+    else:
+        raise ValueError("Cannot parse {0}".format(fileobj.name))
 
-    raise ValueError("Cannot parse {0}".format(fileobj.name))
+    return Config(fileobj.name, parsed)

@@ -35,7 +35,9 @@ setuptools.setup(
         "console_scripts": ["scd = scd.main:main"],
         "scd.version": [
             "semver = scd.version:SemVer",
-            "pep440 = scd.version:PEP440"
+            "pep440 = scd.version:PEP440",
+            "git_semver = scd.version:GitSemVer",
+            "git_pep440 = scd.version:GitPEP440"
         ]
     },
     setup_requires=["setuptools_scm"],

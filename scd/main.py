@@ -14,6 +14,7 @@ import sys
 import six
 
 import scd.config
+import scd.version
 
 
 DESCRIPTION = """
@@ -58,9 +59,9 @@ def main():
 
     logging.debug("Options: %s", OPTIONS)
 
-    raw_config = scd.config.parse(OPTIONS.config)
-    config = scd.config.Config(OPTIONS.config.name, raw_config)
-    print(config.files_raw)
+    config = scd.config.parse(OPTIONS.config)
+    version = scd.version.GitPEP440(config)
+    print(version.version)
 
 
 def get_options():
