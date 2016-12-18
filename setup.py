@@ -8,7 +8,8 @@ REQUIREMENTS = [
     "six >= 1.10",
     "packaging",
     "semver",
-    "jsonschema"
+    "jsonschema",
+    "jinja2"
 ]
 """Requirements for scd project."""
 

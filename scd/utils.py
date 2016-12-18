@@ -5,9 +5,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import functools
 import logging
 import os
 import subprocess
+
+import six
 
 
 def execute(command):
@@ -22,6 +25,9 @@ def execute(command):
     except OSError as exc:
         logging.warning("Cannot execute %s: %s", name, exc)
         raise ValueError("Cannot execute {0}".format(name))
+    else:
+        stdout = stdout.decode("utf-8").strip()
+        stderr = stderr.decode("utf-8").strip()
 
     if process.returncode != os.EX_OK:
         logging.warning(
@@ -31,5 +37,29 @@ def execute(command):
 
     return {
         "code": process.returncode,
-        "stdout": stdout.decode("utf-8").strip().split("\n"),
-        "stderr": stderr.decode("utf-8").strip().split("\n")}
+        "stdout": stdout.split("\n"),
+        "stderr": stderr.split("\n")}
+
+
+if six.PY34:
+    lru_cache = functools.lru_cache
+else:
+    def lru_cache(*args, **kwargs):
+        cache = {}
+
+        def outer_decorator(func):
+            @six.wraps(func)
+            def inner_decorator(*fargs, **fkwargs):
+                key = "\x00".join(
+                    six.text_type(farg) for farg in sorted(fargs))
+                key += "\x00".join(
+                    six.text_type(k) + "\x00" + six.text_type(v)
+                    for k, v in sorted(fkwargs.items()))
+                if key in cache:
+                    return cache[key]
+
+                cache[key] = func(*fargs, **fkwargs)
+                return cache[key]
+
+            return inner_decorator
+        return outer_decorator

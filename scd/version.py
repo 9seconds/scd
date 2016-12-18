@@ -103,6 +103,26 @@ class Semver(Version):
     __repr__ = __str__
 
     @property
+    def context(self):
+        return {
+            "version": self.version,
+            "major": self.major,
+            "next_major": self.next_major,
+            "prev_major": self.prev_major,
+            "minor": self.minor,
+            "next_minor": self.next_minor,
+            "prev_minor": self.prev_minor,
+            "patch": self.patch,
+            "next_patch": self.next_patch,
+            "prev_patch": self.prev_patch,
+            "prerelease": self.prerelease,
+            "next_prerelease": self.next_prerelease,
+            "prev_prerelease": self.prev_prerelease,
+            "build": self.build,
+            "next_build": self.next_build,
+            "prev_build": self.prev_build}
+
+    @property
     def version(self):
         return self.base_number
 
@@ -202,6 +222,29 @@ class PEP440(Version):
         self.parsed = packaging.version.parse(self.base_number)._version
         if isinstance(self.parsed, six.string_types):
             raise ValueError("Incorrect version {0}".format(self.base_number))
+
+    @property
+    def context(self):
+        return {
+            "version": self.version,
+            "major": self.major,
+            "next_major": self.next_major,
+            "prev_major": self.prev_major,
+            "minor": self.minor,
+            "next_minor": self.next_minor,
+            "prev_minor": self.prev_minor,
+            "patch": self.patch,
+            "next_patch": self.next_patch,
+            "prev_patch": self.prev_patch,
+            "prerelease": self.prerelease,
+            "next_prerelease": self.next_prerelease,
+            "prev_prerelease": self.prev_prerelease,
+            "dev": self.dev,
+            "next_dev": self.next_dev,
+            "prev_dev": self.prev_dev,
+            "post": self.post,
+            "next_post": self.next_post,
+            "prev_post": self.prev_post}
 
     @property
     def version(self):

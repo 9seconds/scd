@@ -20,8 +20,7 @@ search_patterns:
 #   - pre
 #   - next_pre
 replacement_patterns:
-  full: "{major}.{minor}.{patch}"
-  basic: "{major}.{minor}"
+  full: "{{ major }}.{{ minor }}.{{ patch }}"
 
 defaults:
   search: basic
@@ -31,6 +30,6 @@ files:
   - filename: setup.py
     replacements:
       - search: basic
-        replace: basic
+        replace: major_minor
       - search_raw: "sadfsadfs"
         replace_raw: "sdfsdfsdfsdf"

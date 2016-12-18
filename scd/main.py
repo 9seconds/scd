@@ -14,6 +14,7 @@ import sys
 import six
 
 import scd.config
+import scd.files
 import scd.version
 
 
@@ -62,6 +63,7 @@ def main():
     config = scd.config.parse(OPTIONS.config)
     version = scd.version.GitPEP440(config)
     print(version.version)
+    print(scd.files.File(config, config.raw["files"][0]).patterns)
 
 
 def get_options():
