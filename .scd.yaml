@@ -3,7 +3,7 @@ version:
   number: 0.1.0
 
 search_patterns:
-  basic: "\\d\\d\\d"
+  basic: "\\d\\.\\d\\.\\d"
   advanced: "\\sdfas\\df\\sdf"
 
 # Available replacements:

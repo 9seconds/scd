@@ -51,6 +51,14 @@ def catch_exceptions(func):
     return decorator
 
 
+def filter_files(all_files, required):
+    if not required:
+        return all_files
+
+    required = {os.path.abspath(path.name) for path in required}
+    return [fileobj for fileobj in all_files if fileobj.path in required]
+
+
 @catch_exceptions
 def main():
     global OPTIONS
@@ -66,13 +74,13 @@ def main():
     if not scd.files.validate_access(config.files):
         logging.error("Cannot process all files, so nothing to do.")
 
-    for fileobj in config.files:
+    for fileobj in filter_files(config.files, OPTIONS.files):
         logging.debug("Start to process %s", fileobj)
 
         need_to_save = False
         file_result = []
         with open(fileobj.path, "rt") as filefp:
-            for line in filefp:
+            for line in (l.rstrip("\r\n") for l in filefp):
                 original_line = line
                 for sr in fileobj.patterns:
                     line = sr.process(config.version, line, OPTIONS.dry_run)
