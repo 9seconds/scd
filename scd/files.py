@@ -5,11 +5,11 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import collections
 import os.path
 import re
 
 import jinja2
+import six
 
 import scd.utils
 
@@ -20,14 +20,39 @@ DEFAULT_REPLACEMENTS = {
     "major": "{{ major }}",
 }
 
-SearchReplace = collections.namedtuple("SearchReplace", ["search", "replace"])
+
+@six.python_2_unicode_compatible
+class SearchReplace(object):
+
+    def __init__(self, search, replace):
+        self.search = search
+        self.replace = replace
+
+    def __str__(self):
+        return (
+            "<{0.__class__.__name__}(search={0.search.pattern!r}, "
+            "replace={0.replace!r})>").format(self)
+
+    def process(self, version, text):
+        replacement = self.replace.render(**version.context)
+        return self.search.sub(replacement, text)
+
+    __repr__ = __str__
 
 
+@six.python_2_unicode_compatible
 class File(object):
 
     def __init__(self, config, data):
         self.config = config
         self.data = data
+
+    def __str__(self):
+        return (
+            "<{0.__class__.__name__}(filename={0.filename!r}, "
+            "path={0.path!r}, patterns={0.patterns})>").format(self)
+
+    __repr__ = __str__
 
     @property
     def filename(self):
@@ -46,7 +71,7 @@ class File(object):
         replacements = self.default_replacements.copy()
         replacements.update(
             (k, make_template(v))
-            for k, v in self.config.raw["replacement_patterns"].items())
+            for k, v in self.config.replacement_patterns.items())
 
         return replacements
 
@@ -58,19 +83,17 @@ class File(object):
     def all_search_patterns(self):
         patterns = self.default_replacements.copy()
         patterns.update(
-            (k, re.compile(v))
-            for k, v in self.config.raw["search_patterns"].items())
+            (k, re.compile(v)) for k, v in self.config.search_patterns.items())
 
         return patterns
 
     @property
     def default_search_pattern(self):
-        return self.all_search_patterns[self.config.raw["defaults"]["search"]]
+        return self.all_search_patterns[self.config.defaults["search"]]
 
     @property
     def default_replace_pattern(self):
-        return self.all_replacements[
-            self.config.raw["defaults"]["replacement"]]
+        return self.all_replacements[self.config.defaults["replacement"]]
 
     @property
     def patterns(self):

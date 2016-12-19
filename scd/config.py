@@ -11,6 +11,8 @@ import os.path
 
 import six
 
+import scd.files
+
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
 
@@ -35,10 +37,20 @@ class Config(object):
         return self.raw["version"]["number"]
 
     @property
-    def files_raw(self):
-        return {
-            os.path.join(self.project_directory, v["filename"]):
-            v["replacements"] for v in self.raw["files"]}
+    def files(self):
+        return [scd.files.File(self, conf) for conf in self.raw["files"]]
+
+    @property
+    def replacement_patterns(self):
+        return self.raw["replacement_patterns"]
+
+    @property
+    def search_patterns(self):
+        return self.raw["search_patterns"]
+
+    @property
+    def defaults(self):
+        return self.raw["defaults"]
 
     def __str__(self):
         return "<Config(path={0.configpath}, raw={0.raw})".format(self)

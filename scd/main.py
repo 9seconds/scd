@@ -63,7 +63,7 @@ def main():
     config = scd.config.parse(OPTIONS.config)
     version = scd.version.GitPEP440(config)
     print(version.version)
-    print(scd.files.File(config, config.raw["files"][0]).patterns)
+    print(config.files)
 
 
 def get_options():
