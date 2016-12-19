@@ -17,12 +17,13 @@ import scd.utils
 DEFAULT_REPLACEMENTS = {
     "major_minor_patch": "{{ major }}.{{ minor }}.{{ patch }}",
     "major_minor": "{{ major }}.{{ minor }}",
-    "major": "{{ major }}",
-}
+    "major": "{{ major }}"}
 
 
 @six.python_2_unicode_compatible
 class SearchReplace(object):
+
+    __slots__ = "search", "replace"
 
     def __init__(self, search, replace):
         self.search = search
@@ -42,6 +43,8 @@ class SearchReplace(object):
 
 @six.python_2_unicode_compatible
 class File(object):
+
+    __slots__ = "config", "data"
 
     def __init__(self, config, data):
         self.config = config

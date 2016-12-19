@@ -50,6 +50,8 @@ def git_tag(git_dir):
 @six.add_metaclass(abc.ABCMeta)
 class Version(object):
 
+    __slots__ = "base_number", "_config"
+
     def __init__(self, config):
         self.base_number = six.text_type(config.version_number)
         self._config = config
@@ -66,6 +68,8 @@ class Version(object):
 
 @six.python_2_unicode_compatible
 class Semver(Version):
+
+    __slots__ = "base_number", "_config", "parsed"
 
     TEXT_VERSION_REGEXP = re.compile(r"\d+(?=\D*$)")
 
@@ -185,6 +189,8 @@ class Semver(Version):
 
 class GitSemVer(Semver):
 
+    __slots__ = "base_number", "_config", "parsed", "distance", "tag"
+
     def __init__(self, config):
         super(GitSemVer, self).__init__(config)
 
@@ -215,6 +221,8 @@ class GitSemVer(Semver):
 
 @six.python_2_unicode_compatible
 class PEP440(Version):
+
+    __slots__ = "base_number", "_config", "parsed"
 
     def __init__(self, config):
         super(PEP440, self).__init__(config)
@@ -371,6 +379,8 @@ class PEP440(Version):
 
 
 class GitPEP440(PEP440):
+
+    __slots__ = "base_number", "_config", "parsed", "distance", "tag"
 
     def __init__(self, config):
         super(GitPEP440, self).__init__(config)

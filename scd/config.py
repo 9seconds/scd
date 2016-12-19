@@ -20,6 +20,8 @@ Parser = collections.namedtuple("Parser", ["name", "func"])
 @six.python_2_unicode_compatible
 class Config(object):
 
+    __slots__ = "raw", "configpath"
+
     def __init__(self, configpath, config):
         self.raw = config
         self.configpath = os.path.abspath(configpath)
