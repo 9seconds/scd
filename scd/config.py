@@ -12,9 +12,13 @@ import os.path
 import six
 
 import scd.files
+import scd.utils
+import scd.version
 
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
+
+VERSION_PLUGIN_NAMESPACE = "scd.version"
 
 
 @six.python_2_unicode_compatible
@@ -33,6 +37,11 @@ class Config(object):
     @property
     def version_scheme(self):
         return self.raw["version"].get("scheme", "semver")
+
+    @property
+    def version(self):
+        plugins = scd.utils.get_plugins(VERSION_PLUGIN_NAMESPACE)
+        return plugins[self.version_scheme](self)
 
     @property
     def version_number(self):

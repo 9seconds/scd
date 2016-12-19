@@ -5,6 +5,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
+import os
 import os.path
 import re
 
@@ -34,9 +36,16 @@ class SearchReplace(object):
             "<{0.__class__.__name__}(search={0.search.pattern!r}, "
             "replace={0.replace!r})>").format(self)
 
-    def process(self, version, text):
+    def process(self, version, text, dry_run=False):
         replacement = self.replace.render(**version.context)
-        return self.search.sub(replacement, text)
+        modified_text = self.search.sub(replacement, text)
+
+        if not dry_run:
+            return modified_text
+        if text != modified_text:
+            logging.debug("Modify %r to %r", text, modified_text)
+
+        return text
 
     __repr__ = __str__
 
@@ -131,3 +140,20 @@ class File(object):
 @scd.utils.lru_cache()
 def make_template(template):
     return jinja2.Template(template)
+
+
+def validate_access(files):
+    ok = True
+
+    for fileobj in files:
+        if not os.path.isfile(fileobj.path):
+            logging.error("Path %s is not a file.", fileobj.path)
+            ok = False
+        elif not os.access(fileobj.path, os.R_OK | os.W_OK):
+            logging.error("File %s is not readable and writable.",
+                          fileobj.path)
+            ok = False
+        else:
+            logging.debug("File %s is ok", fileobj.path)
+
+    return ok

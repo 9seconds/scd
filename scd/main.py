@@ -61,9 +61,31 @@ def main():
     logging.debug("Options: %s", OPTIONS)
 
     config = scd.config.parse(OPTIONS.config)
-    version = scd.version.GitPEP440(config)
-    print(version.version)
-    print(config.files)
+    logging.debug("Version is %s", config.version)
+
+    if not scd.files.validate_access(config.files):
+        logging.error("Cannot process all files, so nothing to do.")
+
+    for fileobj in config.files:
+        logging.debug("Start to process %s", fileobj)
+
+        need_to_save = False
+        file_result = []
+        with open(fileobj.path, "rt") as filefp:
+            for line in filefp:
+                original_line = line
+                for sr in fileobj.patterns:
+                    line = sr.process(config.version, line, OPTIONS.dry_run)
+                if original_line != line:
+                    need_to_save = True
+                file_result.append(line)
+
+        if need_to_save:
+            logging.info("Need to save %s", fileobj.path)
+            with open(fileobj.path, "wt") as filefp:
+                filefp.writelines("{0}\n".format(line) for line in file_result)
+        else:
+            logging.info("No need to save %s", fileobj.path)
 
 
 def get_options():

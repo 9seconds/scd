@@ -67,7 +67,7 @@ class Version(object):
 
 
 @six.python_2_unicode_compatible
-class Semver(Version):
+class SemVer(Version):
 
     __slots__ = "base_number", "_config", "parsed"
 
@@ -90,7 +90,7 @@ class Semver(Version):
         return max(0, cls.parse_text_version(version) - 1)
 
     def __init__(self, config):
-        super(Semver, self).__init__(config)
+        super(SemVer, self).__init__(config)
 
         self.parsed = semver.parse_version_info(self.base_number)
 
@@ -176,7 +176,7 @@ class Semver(Version):
 
     @property
     def next_build(self):
-        return re.sub(
+        return self.TEXT_VERSION_REGEXP.sub(
             lambda m: six.text_type(self.next_text_version(m.group(0))),
             self.build)
 
@@ -187,7 +187,7 @@ class Semver(Version):
             self.build)
 
 
-class GitSemVer(Semver):
+class GitSemVer(SemVer):
 
     __slots__ = "base_number", "_config", "parsed", "distance", "tag"
 
@@ -214,9 +214,7 @@ class GitSemVer(Semver):
     def next_build(self):
         return ""
 
-    @property
-    def prev_build(self):
-        return ""
+    prev_build = next_build
 
 
 @six.python_2_unicode_compatible
@@ -398,9 +396,7 @@ class GitPEP440(PEP440):
     def prev_dev(self):
         return ""
 
-    @property
-    def next_dev(self):
-        return ""
+    next_dev = prev_dev
 
     @property
     def local(self):
