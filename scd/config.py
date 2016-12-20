@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# TODO Config validation
 
 
 from __future__ import absolute_import
@@ -115,6 +116,7 @@ def parse(fileobj):
     for parser in get_parsers():
         try:
             parsed = parser.func(content)
+            logging.info("Parsed config as %s", parser.name)
             break
         except Exception as exc:
             logging.warning("Cannot parse %s: %s", parser.name, exc)
