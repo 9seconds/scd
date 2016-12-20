@@ -90,7 +90,7 @@ def process_file(fileobj, config):
                 line = sr.process(config.version, line)
                 if original_line != line:
                     need_to_save = True
-                    file_result.append(line)
+                file_result.append(line)
 
     if not OPTIONS.dry_run and need_to_save:
         logging.info("Need to save %s", fileobj.path)
