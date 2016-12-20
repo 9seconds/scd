@@ -115,7 +115,7 @@ class SemVer(Version):
     @property
     def context(self):
         return {
-            "version": self.version,
+            "full": self.version,
             "major": self.major,
             "next_major": self.next_major,
             "prev_major": self.prev_major,
@@ -241,7 +241,7 @@ class PEP440(Version):
     @property
     def context(self):
         return {
-            "version": self.version,
+            "full": self.version,
             "major": self.major,
             "next_major": self.next_major,
             "prev_major": self.prev_major,

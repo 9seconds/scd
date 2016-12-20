@@ -16,6 +16,7 @@ REQUIREMENTS = [
 
 setuptools.setup(
     name="scd",
+    version="0.1.0",
     description="Something Completely different",
     long_description="",
     author="Sergey Arkhipov",

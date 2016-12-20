@@ -19,7 +19,9 @@ import scd.utils
 DEFAULT_REPLACEMENTS = {
     "major_minor_patch": "{{ major }}.{{ minor }}.{{ patch }}",
     "major_minor": "{{ major }}.{{ minor }}",
-    "major": "{{ major }}"}
+    "major": "{{ major }}",
+    "full": "{{ full }}"
+}
 
 
 @six.python_2_unicode_compatible

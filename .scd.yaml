@@ -1,10 +1,9 @@
 version:
-  scheme: semver
+  scheme: git_pep440
   number: 0.1.0
 
 search_patterns:
-  basic: "\\d\\.\\d\\.\\d"
-  advanced: "\\sdfas\\df\\sdf"
+  setuppy: "(?<=version=\\\"){{ git_pep440 }}"
 
 # Available replacements:
 #   - major
@@ -19,17 +18,15 @@ search_patterns:
 #   - next_post
 #   - pre
 #   - next_pre
-replacement_patterns:
-  full: "{{ major }}.{{ minor }}.{{ patch }}"
+# replacement_patterns:
+#   full: "{{ major }}.{{ minor }}.{{ patch }}1"
 
-defaults:
-  search: basic
-  replacement: full
+# defaults:
+#   search: basic
+#   replacement: full
 
 files:
   - filename: setup.py
     replacements:
-      - search: basic
-        replace: major_minor
-      - search_raw: "sadfsadfs"
-        replace_raw: "sdfsdfsdfsdf"
+      - search: setuppy
+        replace: full

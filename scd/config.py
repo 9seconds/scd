@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# TODO Config validation
 
 
 from __future__ import absolute_import
@@ -7,9 +6,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
+import json
 import logging
 import os.path
 
+import jsonschema
 import six
 
 import scd.files
@@ -19,13 +20,84 @@ import scd.version
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
 
+CONFIG_SCHEMA = {
+    "type": "object",
+    "required": ["version", "files"],
+    "properties": {
+        "version": {
+            "type": "object",
+            "required": ["scheme", "number"],
+            "properties": {
+                "scheme": {
+                    "type": "string",
+                    "enum": sorted(scd.utils.get_version_plugins().keys())
+                },
+                "number": {
+                    "oneOf": [
+                        {"type": "number"},
+                        {"type": "string"}
+                    ]
+                }
+            }
+        },
+        "files": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {"type": "string", "enum": ["default"]},
+                    {
+                        "type": "object",
+                        "properties": {
+                            "search": {"type": "string"},
+                            "search_raw": {"type": "string"},
+                            "replace": {"type": "string"},
+                            "replace_raw": {"type": "string"}
+                        }
+                    }
+                ]
+            }
+        },
+        "search_patterns": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        },
+        "replacement_paterns": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        },
+        "defaults": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        }
+    }
+}
+
 
 @six.python_2_unicode_compatible
 class Config(object):
 
     __slots__ = "raw", "configpath"
 
+    @staticmethod
+    def validate_schema(config):
+        errors = []
+        validator = jsonschema.Draft4Validator(
+            CONFIG_SCHEMA, format_checker=jsonschema.FormatChecker())
+
+        for err in validator.iter_errors(config):
+            errors.append("{0}: {1}".format("/".join(err.path), err.message))
+
+        return errors
+
     def __init__(self, configpath, config):
+        errors = self.validate_schema(config)
+        if errors:
+            for error in errors:
+                logging.error("Error in config: %s", error)
+            logging.debug("Schema is \n%s",
+                          json.dumps(CONFIG_SCHEMA, sort_keys=True, indent=4))
+            raise ValueError("Incorrect config")
+
         self.raw = config
         self.configpath = os.path.abspath(configpath)
 
@@ -45,7 +117,7 @@ class Config(object):
 
     @property
     def version_number(self):
-        return self.raw["version"]["number"]
+        return six.text_type(self.raw["version"]["number"])
 
     @property
     def files(self):
@@ -53,15 +125,15 @@ class Config(object):
 
     @property
     def replacement_patterns(self):
-        return self.raw["replacement_patterns"]
+        return self.raw.get("replacement_patterns", {})
 
     @property
     def search_patterns(self):
-        return self.raw["search_patterns"]
+        return self.raw.get("search_patterns", {})
 
     @property
     def defaults(self):
-        return self.raw["defaults"]
+        return self.raw.get("defaults", {})
 
     def __str__(self):
         return "<Config(path={0.configpath}, raw={0.raw})".format(self)
