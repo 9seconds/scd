@@ -76,24 +76,28 @@ def main():
 
     for fileobj in filter_files(config.files, OPTIONS.files):
         logging.debug("Start to process %s", fileobj)
+        process_file(fileobj, config)
 
-        need_to_save = False
-        file_result = []
-        with open(fileobj.path, "rt") as filefp:
-            for line in (l.rstrip("\r\n") for l in filefp):
-                original_line = line
-                for sr in fileobj.patterns:
-                    line = sr.process(config.version, line, OPTIONS.dry_run)
+
+def process_file(fileobj, config):
+    need_to_save = False
+    file_result = []
+
+    with open(fileobj.path, "rt") as filefp:
+        for line in filefp:
+            original_line = line
+            for sr in fileobj.patterns:
+                line = sr.process(config.version, line, OPTIONS.dry_run)
                 if original_line != line:
                     need_to_save = True
-                file_result.append(line)
+                    file_result.append(line)
 
-        if need_to_save:
-            logging.info("Need to save %s", fileobj.path)
-            with open(fileobj.path, "wt") as filefp:
-                filefp.writelines("{0}\n".format(line) for line in file_result)
-        else:
-            logging.info("No need to save %s", fileobj.path)
+    if need_to_save:
+        logging.info("Need to save %s", fileobj.path)
+        with open(fileobj.path, "wt") as filefp:
+            filefp.writelines(file_result)
+    else:
+        logging.info("No need to save %s", fileobj.path)
 
 
 def get_options():
