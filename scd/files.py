@@ -36,16 +36,14 @@ class SearchReplace(object):
             "<{0.__class__.__name__}(search={0.search.pattern!r}, "
             "replace={0.replace!r})>").format(self)
 
-    def process(self, version, text, dry_run=False):
+    def process(self, version, text):
         replacement = self.replace.render(**version.context)
         modified_text = self.search.sub(replacement, text)
 
-        if not dry_run:
-            return modified_text
         if text != modified_text:
             logging.debug("Modify %r to %r", text, modified_text)
 
-        return text
+        return modified_text
 
     __repr__ = __str__
 

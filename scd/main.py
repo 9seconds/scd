@@ -87,12 +87,12 @@ def process_file(fileobj, config):
         for line in filefp:
             original_line = line
             for sr in fileobj.patterns:
-                line = sr.process(config.version, line, OPTIONS.dry_run)
+                line = sr.process(config.version, line)
                 if original_line != line:
                     need_to_save = True
                     file_result.append(line)
 
-    if need_to_save:
+    if not OPTIONS.dry_run and need_to_save:
         logging.info("Need to save %s", fileobj.path)
         with open(fileobj.path, "wt") as filefp:
             filefp.writelines(file_result)
