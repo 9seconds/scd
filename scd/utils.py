@@ -14,6 +14,9 @@ import pkg_resources
 import six
 
 
+VERSION_PLUGIN_NAMESPACE = "scd.version"
+
+
 if six.PY34:
     lru_cache = functools.lru_cache
 else:
@@ -74,3 +77,7 @@ def get_plugins(namespace):
         plugins[plugin.name] = plugin.load()
 
     return plugins
+
+
+def get_version_plugins():
+    return get_plugins(VERSION_PLUGIN_NAMESPACE)

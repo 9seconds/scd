@@ -50,6 +50,8 @@ def git_tag(git_dir):
 @six.add_metaclass(abc.ABCMeta)
 class Version(object):
 
+    REGEXP = re.compile(r"\d+\.\d+\.\d+")
+
     __slots__ = "base_number", "_config"
 
     def __init__(self, config):
@@ -72,6 +74,10 @@ class SemVer(Version):
     __slots__ = "base_number", "_config", "parsed"
 
     TEXT_VERSION_REGEXP = re.compile(r"\d+(?=\D*$)")
+
+    REGEXP = semver._REGEX.pattern.strip()
+    REGEXP = REGEXP.lstrip("^").rstrip("$").strip()
+    REGEXP = re.compile(REGEXP, re.VERBOSE)
 
     @classmethod
     def parse_text_version(cls, version):
@@ -221,6 +227,9 @@ class GitSemVer(SemVer):
 class PEP440(Version):
 
     __slots__ = "base_number", "_config", "parsed"
+
+    REGEXP = packaging.version.VERSION_PATTERN.strip()
+    REGEXP = re.compile(REGEXP, re.VERBOSE | re.IGNORECASE)
 
     def __init__(self, config):
         super(PEP440, self).__init__(config)

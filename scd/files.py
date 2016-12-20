@@ -95,7 +95,8 @@ class File(object):
     def all_search_patterns(self):
         patterns = self.default_replacements.copy()
         patterns.update(
-            (k, re.compile(v)) for k, v in self.config.search_patterns.items())
+            (k, make_pattern(v))
+            for k, v in self.config.search_patterns.items())
 
         return patterns
 
@@ -119,7 +120,7 @@ class File(object):
                 continue
 
             if "search_raw" in item:
-                search_pattern = re.compile(item["search_raw"])
+                search_pattern = make_pattern(item["search_raw"])
             elif "search" in item:
                 search_pattern = self.all_search_patterns[item["search"]]
             else:
@@ -140,6 +141,25 @@ class File(object):
 @scd.utils.lru_cache()
 def make_template(template):
     return jinja2.Template(template)
+
+
+@scd.utils.lru_cache()
+def make_pattern(base_pattern):
+    patterns = {}
+    for name, data in scd.utils.get_version_plugins().items():
+        if not hasattr(data, "REGEXP"):
+            logging.warning("Plugin %s has no regexp, skip.")
+            continue
+        if not hasattr(data.REGEXP, "pattern"):
+            logging.warning("Plugin %s regexp is not a pattern, skip.")
+            continue
+        patterns[name] = data.REGEXP.pattern
+
+    pattern = make_template(base_pattern)
+    pattern = pattern.render(**patterns)
+    pattern = re.compile(pattern, re.VERBOSE)
+
+    return pattern
 
 
 def validate_access(files):
