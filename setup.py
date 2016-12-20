@@ -42,8 +42,6 @@ setuptools.setup(
             "git_pep440 = scd.version:GitPEP440"
         ]
     },
-    setup_requires=["setuptools_scm"],
-    use_scm_version={"root": ".", "relative_to": __file__},
     zip_safe=True,
     classifiers=(
         "Intended Audience :: Information Technology",
