@@ -5,11 +5,11 @@ import setuptools
 
 
 REQUIREMENTS = [
-    "six >= 1.10",
-    "packaging",
-    "semver",
-    "jsonschema",
-    "jinja2"
+    "six>=1.10",
+    "packaging>=16,<17",
+    "semver>=2,<3",
+    "jsonschema>=2.5,<2.6",
+    "jinja2>=2.6,<3"
 ]
 """Requirements for scd project."""
 
