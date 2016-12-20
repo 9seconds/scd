@@ -115,14 +115,12 @@ def get_options():
         action="store_true",
         default=False,
         help="make dry run, do not change anything.")
-
     parser.add_argument(
-        "config",
+        "-c", "--config",
         metavar="CONFIG_PATH",
-        nargs=argparse.OPTIONAL,
         type=argparse.FileType("rt"),
         default=".scd.yaml",
-        help="Path to the config.")
+        help="Path to the config. Default is $(pwd)/.scd.yaml.")
     parser.add_argument(
         "files",
         metavar="FILE_PATH",
