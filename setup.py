@@ -16,7 +16,7 @@ REQUIREMENTS = [
 
 setuptools.setup(
     name="scd",
-    version="0.1.0",
+    version="0.0.1",
     description="Something Completely different",
     long_description="",
     author="Sergey Arkhipov",
@@ -53,6 +53,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5"
-        "Programming Language :: Python :: PyPy"
     )
 )

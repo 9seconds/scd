@@ -33,8 +33,10 @@ def git_distance(git_dir, matcher="v*"):
 
     output = result["stdout"][0]
     try:
-        distance = output.rsplit("-", 2)[1]
-        return int(distance)
+        distance = output.rsplit("-", 2)
+        if len(distance) == 1:
+            return 0
+        return int(distance[1])
     except Exception as exc:
         logging.debug("Cannot parse git result %s: %s", distance, exc)
         return None
@@ -57,7 +59,10 @@ class GitMixin(Hashable):
         git_dir = os.path.join(self._config.project_directory, ".git")
         git_matcher = self._config.raw["version"].get("tag_glob", "v*")
         self.distance = git_distance(git_dir, git_matcher)
-        self.tag = git_tag(git_dir)
+        if self.distance == 0:
+            self.tag = ""
+        else:
+            self.tag = git_tag(git_dir)
 
     def __hash__(self):
         return hash("|".join([

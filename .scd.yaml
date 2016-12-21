@@ -1,6 +1,6 @@
 version:
   scheme: git_pep440
-  number: "0.1.0"
+  number: "0.0.1"
 
 search_patterns:
   setuppy: "(?<=version=\\\"){{ git_pep440 }}"
