@@ -9,8 +9,7 @@ REQUIREMENTS = [
     "packaging>=16,<17",
     "semver>=2,<3",
     "jsonschema>=2.5,<2.6",
-    "jinja2>=2.6,<3",
-    "colorama>=0.3,<0.4"
+    "jinja2>=2.6,<3"
 ]
 """Requirements for scd project."""
 
@@ -32,7 +31,8 @@ setuptools.setup(
     extras_require={
         "yaml": ["PyYAML ~= 3.10"],
         "toml": ["toml ~= 0.9.2"],
-        "simplejson": ["simplejson"]
+        "simplejson": ["simplejson"],
+        "colors": ["colorama>=0.3,<0.4"]
     },
     entry_points={
         "console_scripts": ["scd = scd.main:main"],

@@ -12,13 +12,17 @@ import os
 import os.path
 import sys
 
-import colorama
 import six
 
 import scd.config
 import scd.files
 import scd.utils
 import scd.version
+
+try:
+    import colorama
+except ImportError:
+    colorama = None
 
 
 DESCRIPTION = """
@@ -176,34 +180,49 @@ def search_config_in_directory(directory):
     logging.debug("No suitable configfile in %s", directory)
 
 
-def configure_logging():
-    if OPTIONS.debug:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format=(
-                colorama.Style.DIM
-                + "%(relativeCreated)d "
-                + colorama.Style.RESET_ALL + "["
-                + colorama.Fore.RED + "%(levelname)-7s"
-                + colorama.Style.RESET_ALL + "] ("
-                + colorama.Fore.GREEN + "%(module)10s"
-                + colorama.Style.RESET_ALL + ":"
-                + colorama.Fore.BLUE + "%(lineno)-3d"
-                + colorama.Style.RESET_ALL + ") %(message)s"
+if colorama:
+    def configure_logging():
+        if OPTIONS.debug:
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format=(
+                    colorama.Style.DIM
+                    + "%(relativeCreated)d "
+                    + colorama.Style.RESET_ALL + "["
+                    + colorama.Fore.RED + "%(levelname)-7s"
+                    + colorama.Style.RESET_ALL + "] ("
+                    + colorama.Fore.GREEN + "%(module)10s"
+                    + colorama.Style.RESET_ALL + ":"
+                    + colorama.Fore.BLUE + "%(lineno)-3d"
+                    + colorama.Style.RESET_ALL + ") %(message)s"
+                )
             )
-        )
-    elif OPTIONS.verbose:
-        logging.basicConfig(
-            level=logging.INFO,
-            format=(
-                colorama.Style.DIM
-                + ">>> "
-                + colorama.Style.RESET_ALL
-                + "%(message)s"
+        elif OPTIONS.verbose:
+            logging.basicConfig(
+                level=logging.INFO,
+                format=(
+                    colorama.Style.DIM
+                    + ">>> "
+                    + colorama.Style.RESET_ALL
+                    + "%(message)s"
+                )
             )
-        )
-    else:
-        logging.basicConfig(level=logging.ERROR, format="%(message)s")
+        else:
+            logging.basicConfig(level=logging.ERROR, format="%(message)s")
+else:
+    def configure_logging():
+        if OPTIONS.debug:
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format=(
+                    "%(relativeCreated)d [%(levelname)-7s] (%(module)10s"
+                    ":%(lineno)-3d) %(message)s"
+                )
+            )
+        elif OPTIONS.verbose:
+            logging.basicConfig(level=logging.INFO, format=">>> %(message)s")
+        else:
+            logging.basicConfig(level=logging.ERROR, format="%(message)s")
 
 
 if __name__ == "__main__":
