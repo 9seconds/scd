@@ -46,17 +46,38 @@ def git_tag(git_dir):
     return result["stdout"][0]
 
 
+class GitMixin(object):
+
+    def __init__(self, *args, **kwargs):
+        git_dir = os.path.join(self._config.project_directory, ".git")
+        git_matcher = self._config.raw["version"].get("tag_glob", "v*")
+        self.distance = git_distance(git_dir, git_matcher)
+        self.tag = git_tag(git_dir)
+
+    def __hash__(self):
+        return hash("|".join([
+            self.__class__.__name__,
+            six.text_type(self.base_number),
+            six.text_type(self.distance),
+            six.text_type(self.tag)
+        ]))
+
+
 @six.python_2_unicode_compatible
 @six.add_metaclass(abc.ABCMeta)
 class Version(object):
 
     REGEXP = re.compile(r"\d+\.\d+\.\d+")
 
-    __slots__ = "base_number", "_config"
-
     def __init__(self, config):
         self.base_number = six.text_type(config.version_number)
         self._config = config
+
+    def __hash__(self):
+        return hash("|".join([
+            self.__class__.__name__,
+            six.text_type(self.base_number)
+        ]))
 
     def __str__(self):
         return "<{0.__class__.__name__}(base_number={0.base_number})>".format(
@@ -70,8 +91,6 @@ class Version(object):
 
 @six.python_2_unicode_compatible
 class SemVer(Version):
-
-    __slots__ = "base_number", "_config", "parsed"
 
     TEXT_VERSION_REGEXP = re.compile(r"\d+(?=\D*$)")
 
@@ -193,17 +212,11 @@ class SemVer(Version):
             self.build)
 
 
-class GitSemVer(SemVer):
-
-    __slots__ = "base_number", "_config", "parsed", "distance", "tag"
+class GitSemVer(GitMixin, SemVer):
 
     def __init__(self, config):
-        super(GitSemVer, self).__init__(config)
-
-        git_dir = os.path.join(self._config.project_directory, ".git")
-        git_matcher = self._config.raw["version"].get("tag_glob", "v*")
-        self.distance = git_distance(git_dir, git_matcher)
-        self.tag = git_tag(git_dir)
+        SemVer.__init__(self, config)
+        GitMixin.__init__(self, config)
 
     @property
     def prerelease(self):
@@ -225,8 +238,6 @@ class GitSemVer(SemVer):
 
 @six.python_2_unicode_compatible
 class PEP440(Version):
-
-    __slots__ = "base_number", "_config", "parsed"
 
     REGEXP = packaging.version.VERSION_PATTERN.strip()
     REGEXP = re.compile(REGEXP, re.VERBOSE | re.IGNORECASE)
@@ -385,17 +396,11 @@ class PEP440(Version):
         return ".".join(self.parsed.local or [])
 
 
-class GitPEP440(PEP440):
-
-    __slots__ = "base_number", "_config", "parsed", "distance", "tag"
+class GitPEP440(GitMixin, PEP440):
 
     def __init__(self, config):
-        super(GitPEP440, self).__init__(config)
-
-        git_dir = os.path.join(self._config.project_directory, ".git")
-        git_matcher = self._config.raw["version"].get("tag_glob", "v*")
-        self.distance = git_distance(git_dir, git_matcher)
-        self.tag = git_tag(git_dir)
+        PEP440.__init__(self, config)
+        GitMixin.__init__(self, config)
 
     @property
     def dev(self):

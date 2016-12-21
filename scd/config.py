@@ -113,6 +113,9 @@ class Config(object):
         self.raw = config
         self.configpath = os.path.abspath(configpath)
 
+    def __hash__(self):
+        return hash(self.configpath)
+
     @property
     def project_directory(self):
         return os.path.dirname(self.configpath)

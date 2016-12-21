@@ -69,7 +69,7 @@ def main():
     logging.debug("Options: %s", OPTIONS)
 
     config = scd.config.parse(OPTIONS.config)
-    logging.debug("Version is %s", config.version)
+    logging.debug("Version is %s", config.version.version)
 
     if not scd.files.validate_access(config.files):
         logging.error("Cannot process all files, so nothing to do.")

@@ -29,6 +29,11 @@ class SearchReplace(object):
 
     __slots__ = "search", "replace"
 
+    @staticmethod
+    @scd.utils.lru_cache()
+    def get_replacement(replace, version):
+        return replace.render(**version.context)
+
     def __init__(self, search, replace):
         self.search = search
         self.replace = replace
@@ -38,8 +43,14 @@ class SearchReplace(object):
             "<{0.__class__.__name__}(search={0.search.pattern!r}, "
             "replace={0.replace!r})>").format(self)
 
+    __repr__ = __str__
+
+    def __hash__(self):
+        return hash("|".join(
+            [str(hash(self.search)), str(hash(self.replace))]))
+
     def process(self, version, text):
-        replacement = self.replace.render(**version.context)
+        replacement = self.get_replacement(self.replace, version)
         modified_text = self.search.sub(replacement, text)
 
         if text != modified_text:
@@ -58,6 +69,9 @@ class File(object):
     def __init__(self, config, data):
         self.config = config
         self.data = data
+
+    def __hash__(self):
+        return hash(self.path)
 
     def __str__(self):
         return (
