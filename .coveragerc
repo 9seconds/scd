@@ -10,6 +10,7 @@ source =
 precision = 2
 exclude_lines =
     def __repr__
+    def __str__
     if self\.debug
     raise AssertionError
     raise NotImplementedError

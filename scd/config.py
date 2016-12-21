@@ -142,18 +142,32 @@ class Config(object):
 
 
 def get_parsers():
-    parsers = []
+    parsers = [Parser("JSON", get_json_parser())]
 
+    yaml_parser = get_yaml_parser()
+    if yaml_parser:
+        parsers.append(Parser("YAML", yaml_parser))
+
+    toml_parser = get_toml_parser()
+    if toml_parser:
+        parsers.append(Parser("TOML", toml_parser))
+
+    return parsers
+
+
+def get_json_parser():
     try:
         import simplejson
     except ImportError:
         logging.debug("Use default json as JSON config parser.")
         import json
-        parsers.append(Parser("JSON", json.loads))
-    else:
-        logging.debug("Use simplejson as JSON config parser.")
-        parsers.append(Parser("JSON", simplejson.loads))
+        return json.loads
 
+    logging.debug("Use simplejson as JSON config parser.")
+    return simplejson.loads
+
+
+def get_yaml_parser():
     try:
         import yaml
     except ImportError:
@@ -164,20 +178,20 @@ def get_parsers():
             logging.debug("ruamel.yaml is not importable.")
         else:
             logging.debug("Use ruamel.yaml for YAML config parser.")
-            parsers.append(Parser("YAML", ruamel.yaml.safe_load))
+            return ruamel.yaml.safe_load
     else:
         logging.debug("Use PyYAML for YAML config parser.")
-        parsers.append(Parser("YAML", yaml.safe_load))
+        return yaml.safe_load
 
+
+def get_toml_parser():
     try:
         import toml
     except ImportError:
         logging.debug("toml is not importable.")
     else:
         logging.debug("Use toml for TOML config parser.")
-        parsers.append(Parser("TOML", toml.loads))
-
-    return parsers
+        return toml.loads
 
 
 def parse(fileobj):
