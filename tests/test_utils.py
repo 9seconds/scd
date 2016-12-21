@@ -32,8 +32,7 @@ def test_lru_cache():
 
 
 def test_execute_ok():
-    command = ["python", "-c",
-               "import sys; sys.stdout.write('1'); sys.stderr.write('2')"]
+    command = ["/bin/sh", "-c", "echo 1; echo 2 1>&2"]
 
     result = scd.utils.execute(command)
     assert result["code"] == os.EX_OK
@@ -42,10 +41,7 @@ def test_execute_ok():
 
 
 def test_execute_nok():
-    command = [
-        "python", "-c",
-        "import sys; sys.stdout.write('1'); sys.stderr.write('2'); sys.exit(3)"
-    ]
+    command = ["/bin/sh", "-c", "echo 1; echo 2 1>&2; exit 3"]
 
     with pytest.raises(ValueError):
         scd.utils.execute(command)
