@@ -5,6 +5,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
 import pytest
 
 import scd.config
@@ -57,4 +59,17 @@ def test_invalid_schema(errors, config, tmp_project):
 def test_parsing_ok(fileext, config, tmp_project):
     with tmp_project.join("config." + fileext).open() as ffp:
         conf = scd.config.parse(ffp)
+    assert conf.raw == config
+
+
+def test_parsing_failed(tmp_project):
+    with tmp_project.join("complex").open() as ffp, pytest.raises(ValueError):
+        scd.config.parse(ffp)
+
+
+def test_parsing_bytes(tmp_project, config):
+    tmp_project.join("config.json").write(json.dumps(config).encode("utf-8"))
+    with tmp_project.join("config.json").open() as ffp:
+        conf = scd.config.parse(ffp)
+
     assert conf.raw == config
