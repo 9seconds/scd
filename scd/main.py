@@ -84,35 +84,6 @@ def main():
         process_file(fileobj, config)
 
 
-def filter_files(all_files, required):
-    if not required:
-        return all_files
-
-    required = {os.path.abspath(path.name) for path in required}
-    return [fileobj for fileobj in all_files if fileobj.path in required]
-
-
-def process_file(fileobj, config):
-    need_to_save = False
-    file_result = []
-
-    with codecs.open(fileobj.path, "rt", "utf-8") as filefp:
-        for line in filefp:
-            original_line = line
-            for sr in fileobj.patterns:
-                line = sr.process(config.version, line)
-                if original_line != line:
-                    need_to_save = True
-                file_result.append(line)
-
-    if not OPTIONS.dry_run and need_to_save:
-        logging.debug("Need to save %s", fileobj.path)
-        with codecs.open(fileobj.path, "wt", "utf-8") as filefp:
-            filefp.writelines(file_result)
-    else:
-        logging.debug("No need to save %s", fileobj.path)
-
-
 def get_options():
     parser = argparse.ArgumentParser(
         description=DESCRIPTION,
@@ -147,6 +118,35 @@ def get_options():
             "If nothing is set, all filenames in config will be used."))
 
     return parser.parse_args()
+
+
+def filter_files(all_files, required):
+    if not required:
+        return all_files
+
+    required = {os.path.abspath(path.name) for path in required}
+    return [fileobj for fileobj in all_files if fileobj.path in required]
+
+
+def process_file(fileobj, config):
+    need_to_save = False
+    file_result = []
+
+    with codecs.open(fileobj.path, "rt", "utf-8") as filefp:
+        for line in filefp:
+            original_line = line
+            for sr in fileobj.patterns:
+                line = sr.process(config.version, line)
+                if original_line != line:
+                    need_to_save = True
+                file_result.append(line)
+
+    if not OPTIONS.dry_run and need_to_save:
+        logging.debug("Need to save %s", fileobj.path)
+        with codecs.open(fileobj.path, "wt", "utf-8") as filefp:
+            filefp.writelines(file_result)
+    else:
+        logging.debug("No need to save %s", fileobj.path)
 
 
 def guess_configfile():
