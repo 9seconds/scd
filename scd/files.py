@@ -177,7 +177,7 @@ def make_pattern(base_pattern):
 
     pattern = make_template(base_pattern)
     pattern = pattern.render(**patterns)
-    pattern = re.compile(pattern, re.VERBOSE)
+    pattern = re.compile(pattern, re.VERBOSE | re.UNICODE)
 
     return pattern
 
