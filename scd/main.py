@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import codecs
 import logging
 import os
 import os.path
@@ -16,6 +17,7 @@ import six
 
 import scd.config
 import scd.files
+import scd.utils
 import scd.version
 
 
@@ -55,25 +57,19 @@ def catch_exceptions(func):
     return decorator
 
 
-def filter_files(all_files, required):
-    if not required:
-        return all_files
-
-    required = {os.path.abspath(path.name) for path in required}
-    return [fileobj for fileobj in all_files if fileobj.path in required]
-
-
 @catch_exceptions
 def main():
     global OPTIONS
 
     OPTIONS = get_options()
     configure_logging()
-
     logging.debug("Options: %s", OPTIONS)
 
-    config = scd.config.parse(OPTIONS.config)
+    config = scd.config.parse(guess_configfile())
     logging.info("Version is %s", config.version.version)
+
+    for fobj in OPTIONS.files:
+        fobj.close()
 
     if not scd.files.validate_access(config.files):
         logging.error("Cannot process all files, so nothing to do.")
@@ -84,11 +80,19 @@ def main():
         process_file(fileobj, config)
 
 
+def filter_files(all_files, required):
+    if not required:
+        return all_files
+
+    required = {os.path.abspath(path.name) for path in required}
+    return [fileobj for fileobj in all_files if fileobj.path in required]
+
+
 def process_file(fileobj, config):
     need_to_save = False
     file_result = []
 
-    with open(fileobj.path, "rt") as filefp:
+    with codecs.open(fileobj.path, "rt", "utf-8") as filefp:
         for line in filefp:
             original_line = line
             for sr in fileobj.patterns:
@@ -99,7 +103,7 @@ def process_file(fileobj, config):
 
     if not OPTIONS.dry_run and need_to_save:
         logging.debug("Need to save %s", fileobj.path)
-        with open(fileobj.path, "wt") as filefp:
+        with codecs.open(fileobj.path, "wt", "utf-8") as filefp:
             filefp.writelines(file_result)
     else:
         logging.debug("No need to save %s", fileobj.path)
@@ -127,8 +131,7 @@ def get_options():
     parser.add_argument(
         "-c", "--config",
         metavar="CONFIG_PATH",
-        type=argparse.FileType("rt"),
-        default=".scd.yaml",
+        default=None,
         help="Path to the config. Default is $(pwd)/.scd.yaml.")
     parser.add_argument(
         "files",
@@ -140,6 +143,37 @@ def get_options():
             "If nothing is set, all filenames in config will be used."))
 
     return parser.parse_args()
+
+
+def guess_configfile():
+    if OPTIONS.config:
+        return codecs.open(OPTIONS.config, "rt")
+
+    config = search_config_in_directory(os.getcwd())
+    if not config:
+        result = scd.utils.execute(["git", "rev-parse", "--show-toplevel"])
+        if result["code"] == os.EX_OK:
+            config = search_config_in_directory(result["stdout"][0])
+
+    if not config:
+        raise ValueError("Cannot find configfile.")
+
+    return codecs.open(config, "rt")
+
+
+def search_config_in_directory(directory):
+    logging.debug("Search configfile in %s", directory)
+
+    names = [".scd.json", "scd.json", ".scd.yaml", "scd.yaml", ".scd.toml",
+             "scd.toml"]
+    filenames = set(os.listdir(directory))
+    for name in names:
+        if name in filenames:
+            name = os.path.join(directory, name)
+            logging.info("Use %s as config file", name)
+            return name
+
+    logging.debug("No suitable configfile in %s", directory)
 
 
 def configure_logging():
