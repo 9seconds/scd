@@ -1,5 +1,7 @@
 # scd
 
+[![Build Status](https://travis-ci.org/9seconds/scd.svg?branch=master)](https://travis-ci.org/9seconds/scd)
+
 **This is WIP project, so please check this repo after 0.1 release. Before
 this release, dragons are everywhere.**
 
