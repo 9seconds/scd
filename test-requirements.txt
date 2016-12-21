@@ -18,5 +18,7 @@ pytest
 pytest-cov
 pytest-fauxfactory
 pytest-profiling
+PyYAML
 radon
+toml
 xenon

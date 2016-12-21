@@ -43,18 +43,28 @@ CONFIG_SCHEMA = {
         "files": {
             "type": "array",
             "items": {
-                "oneOf": [
-                    {"type": "string", "enum": ["default"]},
-                    {
-                        "type": "object",
-                        "properties": {
-                            "search": {"type": "string"},
-                            "search_raw": {"type": "string"},
-                            "replace": {"type": "string"},
-                            "replace_raw": {"type": "string"}
+                "type": "object",
+                "required": ["filename", "replacements"],
+                "properties": {
+                    "filename": {"type": "string"},
+                    "replacements": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {"type": "string", "enum": ["default"]},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "search": {"type": "string"},
+                                        "search_raw": {"type": "string"},
+                                        "replace": {"type": "string"},
+                                        "replace_raw": {"type": "string"}
+                                    }
+                                }
+                            ]
                         }
                     }
-                ]
+                }
             }
         },
         "search_patterns": {
@@ -67,7 +77,11 @@ CONFIG_SCHEMA = {
         },
         "defaults": {
             "type": "object",
-            "additionalProperties": {"type": "string"}
+            "properties": {
+                "search": {"type": "string"},
+                "replacement": {"type": "string"}
+            },
+            "additionalProperties": False
         }
     }
 }
@@ -80,14 +94,12 @@ class Config(object):
 
     @staticmethod
     def validate_schema(config):
-        errors = []
         validator = jsonschema.Draft4Validator(
             CONFIG_SCHEMA, format_checker=jsonschema.FormatChecker())
 
-        for err in validator.iter_errors(config):
-            errors.append("{0}: {1}".format("/".join(err.path), err.message))
-
-        return errors
+        return [
+            "{0}: {1}".format("/".join(err.path), err.message)
+            for err in validator.iter_errors(config)]
 
     def __init__(self, configpath, config):
         errors = self.validate_schema(config)
