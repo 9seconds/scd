@@ -1,0 +1,19 @@
+language: python
+sudo: false
+cache: pip
+python: 3.5
+
+env:
+  - TOXENV=py27-dev-test
+  - TOXENV=py34-dev-test
+  - TOXENV=py35-dev-test
+  - TOXENV=metrics
+  - TOXENV=static
+
+install:
+  - pip install tox coverage
+
+script: tox
+
+# after_success:
+#   - bash <(curl -s https://codecov.io/bash)
