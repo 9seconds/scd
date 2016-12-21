@@ -17,6 +17,11 @@ import scd.files
 import scd.utils
 import scd.version
 
+try:
+    from collections.abc import Hashable
+except ImportError:
+    from collections import Hashable
+
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
 
@@ -88,7 +93,7 @@ CONFIG_SCHEMA = {
 
 
 @six.python_2_unicode_compatible
-class Config(object):
+class Config(Hashable):
 
     __slots__ = "raw", "configpath"
 

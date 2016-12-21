@@ -15,6 +15,11 @@ import six
 
 import scd.utils
 
+try:
+    from collections.abc import Hashable
+except Exception as exc:
+    from collections import Hashable
+
 
 DEFAULT_REPLACEMENTS = {
     "major_minor_patch": "{{ major }}.{{ minor }}.{{ patch }}",
@@ -25,7 +30,7 @@ DEFAULT_REPLACEMENTS = {
 
 
 @six.python_2_unicode_compatible
-class SearchReplace(object):
+class SearchReplace(Hashable):
 
     __slots__ = "search", "replace"
 
@@ -62,7 +67,7 @@ class SearchReplace(object):
 
 
 @six.python_2_unicode_compatible
-class File(object):
+class File(Hashable):
 
     __slots__ = "config", "data"
 

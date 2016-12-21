@@ -17,6 +17,11 @@ import six
 
 import scd.utils
 
+try:
+    from collections.abc import Hashable
+except ImportError:
+    from collections import Hashable
+
 
 def git_distance(git_dir, matcher="v*"):
     command = ["git", "--git-dir", git_dir,
@@ -46,7 +51,7 @@ def git_tag(git_dir):
     return result["stdout"][0]
 
 
-class GitMixin(object):
+class GitMixin(Hashable):
 
     def __init__(self, *args, **kwargs):
         git_dir = os.path.join(self._config.project_directory, ".git")
@@ -65,7 +70,7 @@ class GitMixin(object):
 
 @six.python_2_unicode_compatible
 @six.add_metaclass(abc.ABCMeta)
-class Version(object):
+class Version(Hashable):
 
     REGEXP = re.compile(r"\d+\.\d+\.\d+")
 
