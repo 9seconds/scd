@@ -36,7 +36,7 @@ def git_distance(git_dir, matcher="v*"):
         distance = output.rsplit("-", 2)[1]
         return int(distance)
     except Exception as exc:
-        logging.warning("Cannot parse git result %s: %s", distance, exc)
+        logging.debug("Cannot parse git result %s: %s", distance, exc)
         return None
 
 

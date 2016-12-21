@@ -59,7 +59,7 @@ class SearchReplace(Hashable):
         modified_text = self.search.sub(replacement, text)
 
         if text != modified_text:
-            logging.debug("Modify %r to %r", text, modified_text)
+            logging.info("Modify %r to %r", text, modified_text)
 
         return modified_text
 

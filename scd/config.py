@@ -225,7 +225,7 @@ def parse(fileobj):
             logging.info("Parsed config as %s", parser.name)
             break
         except Exception as exc:
-            logging.warning("Cannot parse %s: %s", parser.name, exc)
+            logging.debug("Cannot parse %s: %s", parser.name, exc)
     else:
         raise ValueError("Cannot parse {0}".format(fileobj.name))
 

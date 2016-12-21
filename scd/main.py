@@ -11,6 +11,7 @@ import os
 import os.path
 import sys
 
+import colorama
 import six
 
 import scd.config
@@ -42,8 +43,11 @@ def catch_exceptions(func):
             if OPTIONS:
                 if OPTIONS.debug:
                     logging.exception(exc)
+                elif OPTIONS.verbose:
+                    logging.error(exc)
                 else:
-                    print(exc, file=sys.stderr)
+                    print(colorama.Fore.RED + six.text_type(exc),
+                          file=sys.stderr)
             return os.EX_SOFTWARE
 
         return os.EX_OK
@@ -64,17 +68,18 @@ def main():
     global OPTIONS
 
     OPTIONS = get_options()
-    configure_logging(OPTIONS)
+    configure_logging()
 
     logging.debug("Options: %s", OPTIONS)
 
     config = scd.config.parse(OPTIONS.config)
-    logging.debug("Version is %s", config.version.version)
+    logging.info("Version is %s", config.version.version)
 
     if not scd.files.validate_access(config.files):
         logging.error("Cannot process all files, so nothing to do.")
 
     for fileobj in filter_files(config.files, OPTIONS.files):
+        logging.info("Start to process %s", fileobj.path)
         logging.debug("Start to process %s", fileobj)
         process_file(fileobj, config)
 
@@ -93,11 +98,11 @@ def process_file(fileobj, config):
                 file_result.append(line)
 
     if not OPTIONS.dry_run and need_to_save:
-        logging.info("Need to save %s", fileobj.path)
+        logging.debug("Need to save %s", fileobj.path)
         with open(fileobj.path, "wt") as filefp:
             filefp.writelines(file_result)
     else:
-        logging.info("No need to save %s", fileobj.path)
+        logging.debug("No need to save %s", fileobj.path)
 
 
 def get_options():
@@ -110,6 +115,10 @@ def get_options():
         action="store_true",
         default=False,
         help="run in debug mode")
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="run tool in verbose mode")
     parser.add_argument(
         "-n", "--dry-run",
         action="store_true",
@@ -133,10 +142,34 @@ def get_options():
     return parser.parse_args()
 
 
-def configure_logging(options):
-    logging.basicConfig(
-        level=(logging.DEBUG if options.debug else logging.ERROR),
-        format="[%(levelname)-5s] (%(module)10s:%(lineno)-3d) %(message)s")
+def configure_logging():
+    if OPTIONS.debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=(
+                colorama.Style.DIM
+                + "%(relativeCreated)d "
+                + colorama.Style.RESET_ALL + "["
+                + colorama.Fore.RED + "%(levelname)-7s"
+                + colorama.Style.RESET_ALL + "] ("
+                + colorama.Fore.GREEN + "%(module)10s"
+                + colorama.Style.RESET_ALL + ":"
+                + colorama.Fore.BLUE + "%(lineno)-3d"
+                + colorama.Style.RESET_ALL + ") %(message)s"
+            )
+        )
+    elif OPTIONS.verbose:
+        logging.basicConfig(
+            level=logging.INFO,
+            format=(
+                colorama.Style.DIM
+                + ">>> "
+                + colorama.Style.RESET_ALL
+                + "%(message)s"
+            )
+        )
+    else:
+        logging.basicConfig(level=logging.ERROR, format="%(message)s")
 
 
 if __name__ == "__main__":

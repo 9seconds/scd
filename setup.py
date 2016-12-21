@@ -10,6 +10,7 @@ REQUIREMENTS = [
     "semver>=2,<3",
     "jsonschema>=2.5,<2.6",
     "jinja2>=2.6,<3"
+    "colorama>=0.3,<0.4"
 ]
 """Requirements for scd project."""
 
