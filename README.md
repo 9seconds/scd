@@ -1,6 +1,6 @@
 # scd
 
-[![Build Status](https://travis-ci.org/9seconds/scd.svg?branch=master)](https://travis-ci.org/9seconds/scd)
+[![Build Status](https://travis-ci.org/9seconds/scd.svg?branch=master)](https://travis-ci.org/9seconds/scd) [![codecov](https://codecov.io/gh/9seconds/scd/branch/master/graph/badge.svg)](https://codecov.io/gh/9seconds/scd)
 
 **This is WIP project, so please check this repo after 0.1 release. Before
 this release, dragons are everywhere.**
