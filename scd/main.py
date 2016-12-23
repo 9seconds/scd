@@ -70,7 +70,7 @@ def main():
     logging.debug("Options: %s", OPTIONS)
 
     config = scd.config.parse(guess_configfile())
-    logging.info("Version is %s", config.version.version)
+    logging.info("Version is %s", config.version.full)
 
     for fobj in OPTIONS.files:
         fobj.close()
@@ -80,7 +80,7 @@ def main():
 
     for fileobj in filter_files(config.files, OPTIONS.files):
         logging.info("Start to process %s", fileobj.path)
-        logging.debug("Start to process %s", fileobj)
+        logging.debug("File object: %s", fileobj)
         process_file(fileobj, config)
 
 

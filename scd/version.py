@@ -94,8 +94,12 @@ class Version(Hashable):
             self.base_number)
 
     @property
+    def base(self):
+        return self.base_number
+
+    @property
     @abc.abstractmethod
-    def version(self):
+    def full(self):
         raise NotImplementedError()
 
 
@@ -144,7 +148,8 @@ class SemVer(Version):
     @property
     def context(self):
         return {
-            "full": self.version,
+            "full": self.full,
+            "base": self.base,
             "major": self.major,
             "next_major": self.next_major,
             "prev_major": self.prev_major,
@@ -162,8 +167,14 @@ class SemVer(Version):
             "prev_build": self.prev_build}
 
     @property
-    def version(self):
-        return self.base_number
+    def full(self):
+        number = "{0.major}.{0.minor}.{0.patch}".format(self)
+        if self.prerelease:
+            number += "-{0.prerelease}".format(self)
+        if self.build:
+            number += "+{0.build}".format(self)
+
+        return number
 
     @property
     def next_major(self):
@@ -262,7 +273,8 @@ class PEP440(Version):
     @property
     def context(self):
         return {
-            "full": self.version,
+            "full": self.full,
+            "base": self.base,
             "major": self.major,
             "next_major": self.next_major,
             "prev_major": self.prev_major,
@@ -283,22 +295,21 @@ class PEP440(Version):
             "prev_post": self.prev_post}
 
     @property
-    def version(self):
+    def full(self):
         if self.epoch:
-            consturcted = "{0}!".format(self.epoch)
+            consturcted = "{0.epoch}!".format(self)
         else:
             consturcted = ""
 
         consturcted += ".".join(six.text_type(p) for p in self.parsed.release)
         if self.prerelease:
-            consturcted += "{0}{1}".format(
-                self.prerelease_type, self.prerelease)
+            consturcted += "{0.prerelease_type}{0.prerelease}".format(self)
         if self.post:
-            consturcted += ".post{0}".format(self.post)
+            consturcted += ".post{0.post}".format(self)
         if self.dev:
-            consturcted += ".dev{0}".format(self.dev)
+            consturcted += ".dev{0.dev}".format(self)
         if self.local:
-            consturcted += "+{0}".format(self.local)
+            consturcted += "+{0.local}".format(self)
 
         return consturcted
 

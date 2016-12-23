@@ -28,6 +28,18 @@ def external_command():
         yield mocked
 
 
+@pytest.yield_fixture
+def git_tag():
+    with mock.patch.object(scd.version, "git_tag") as mocked:
+        yield mocked
+
+
+@pytest.yield_fixture
+def git_distance():
+    with mock.patch.object(scd.version, "git_distance") as mocked:
+        yield mocked
+
+
 @pytest.fixture
 def git_dir():
     dirname = os.path.dirname(__file__)
@@ -66,7 +78,7 @@ class TestSemVer(VersionTest):
         self.config.raw["version"]["number"] = "1.2.0-pre1+0"
         version = self.config.version
 
-        assert version.version == "1.2.0-pre1+0"
+        assert version.full == "1.2.0-pre1+0"
         assert version.major == 1
         assert version.next_major == 2
         assert version.prev_major == 0
@@ -84,6 +96,7 @@ class TestSemVer(VersionTest):
         assert version.prev_build == "0"
         assert version.context == {
             "full": "1.2.0-pre1+0",
+            "base": "1.2.0-pre1+0",
             "major": 1,
             "next_major": 2,
             "prev_major": 0,
@@ -132,6 +145,62 @@ class TestSemVer(VersionTest):
 class TestGitSemver(VersionTest):
 
     SCHEME = "git_semver"
+
+    @pytest.mark.parametrize("version", (
+        "0", "0.", "0.1", "0.1.", "0.1.0rc1", "0.."
+    ))
+    def test_version_parse_nok(self, version):
+        self.config.raw["version"]["number"] = version
+        with pytest.raises(ValueError):
+            self.config.version
+
+    def test_version_parse_full(self, git_distance, git_tag):
+        tag_name = pytest.faux.gen_alpha()
+        tag_distance = str(abs(pytest.faux.gen_integer()))
+
+        git_distance.return_value = tag_distance
+        git_tag.return_value = tag_name
+
+        self.config.raw["version"]["number"] = "1.2.0"
+        version = self.config.version
+
+        assert version.full == "1.2.0-{0}+{1}".format(tag_distance, tag_name)
+        assert version.major == 1
+        assert version.next_major == 2
+        assert version.prev_major == 0
+        assert version.minor == 2
+        assert version.next_minor == 3
+        assert version.prev_minor == 1
+        assert version.patch == 0
+        assert version.next_patch == 1
+        assert version.prev_patch == 0
+        assert version.prerelease == tag_distance
+        assert version.next_prerelease == str(
+            scd.version.SemVer.next_text_version(tag_distance))
+        assert version.prev_prerelease == str(
+            scd.version.SemVer.prev_text_version(tag_distance))
+        assert version.build == tag_name
+        assert version.next_build == ""
+        assert version.prev_build == ""
+        assert version.context == {
+            "full": "1.2.0-{0}+{1}".format(tag_distance, tag_name),
+            "base": "1.2.0",
+            "major": 1,
+            "next_major": 2,
+            "prev_major": 0,
+            "minor": 2,
+            "next_minor": 3,
+            "prev_minor": 1,
+            "patch": 0,
+            "next_patch": 1,
+            "prev_patch": 0,
+            "prerelease": tag_distance,
+            "next_prerelease": version.next_prerelease,
+            "prev_prerelease": version.prev_prerelease,
+            "build": tag_name,
+            "next_build": "",
+            "prev_build": ""
+        }
 
 
 @pytest.mark.skipIf(has_git, reason="No git is found in PATH")
