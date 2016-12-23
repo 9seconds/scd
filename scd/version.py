@@ -244,7 +244,7 @@ class GitSemVer(GitMixin, SemVer):
         if self.distance is not None:
             return self.distance
 
-        return super(GitSemVer, self).prerelease
+        return ""
 
     @property
     def build(self):
@@ -275,6 +275,7 @@ class PEP440(Version):
         return {
             "full": self.full,
             "base": self.base,
+            "epoch": self.epoch,
             "major": self.major,
             "next_major": self.next_major,
             "prev_major": self.prev_major,
@@ -427,18 +428,12 @@ class GitPEP440(GitMixin, PEP440):
 
     @property
     def dev(self):
-        return self.distance or ""
-
-    @property
-    def prev_dev(self):
-        return ""
-
-    next_dev = prev_dev
+        return self.distance or 0
 
     @property
     def local(self):
         if self.tag:
-            local = self.parsed.local or []
+            local = list(self.parsed.local or [])
             local.insert(0, self.tag)
             return ".".join(local)
 

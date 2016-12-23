@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import os.path
 import shutil
 
@@ -140,6 +141,9 @@ class TestSemVer(VersionTest):
         else:
             assert version.build == ""
 
+    def test_empty_version(self):
+        assert scd.version.SemVer.parse_text_version("") == 0
+
 
 @pytest.mark.usefixtures("external_command")
 class TestGitSemver(VersionTest):
@@ -203,6 +207,13 @@ class TestGitSemver(VersionTest):
             "prev_build": ""
         }
 
+    def test_empty_distance(self, git_dir, git_distance, git_tag):
+        git_distance.return_value = None
+        self.config.raw["version"]["number"] = "1.2.0"
+        version = self.config.version
+
+        assert version.prerelease == ""
+
 
 class TestPEP440(VersionTest):
 
@@ -215,11 +226,13 @@ class TestPEP440(VersionTest):
             self.config.version
 
     def test_version_parse_full(self):
-        self.config.raw["version"]["number"] = "1.2.0rc3.post3.dev0+local.dd"
+        self.config.raw["version"]["number"] = \
+            "12!1.2.0rc3.post3.dev0+local.dd"
         version = self.config.version
 
-        assert version.base == "1.2.0rc3.post3.dev0+local.dd"
-        assert version.full == "1.2.0rc3.post3+local.dd"
+        assert version.base == "12!1.2.0rc3.post3.dev0+local.dd"
+        assert version.full == "12!1.2.0rc3.post3+local.dd"
+        assert version.epoch == 12
         assert version.major == 1
         assert version.next_major == 2
         assert version.prev_major == 0
@@ -245,6 +258,7 @@ class TestPEP440(VersionTest):
             "full": version.full,
             "base": version.base,
             "major": version.major,
+            "epoch": version.epoch,
             "next_major": version.next_major,
             "prev_major": version.prev_major,
             "minor": version.minor,
@@ -266,6 +280,40 @@ class TestPEP440(VersionTest):
             "local": version.local
         }
 
+    def test_no_epoch(self):
+        self.config.raw["version"]["number"] = \
+            "1.2.0rc3.post3.dev0+local.dd"
+        assert self.config.version.epoch == 0
+
+
+@pytest.mark.usefixtures("external_command")
+class TestGitPEP440(VersionTest):
+
+    SCHEME = "git_pep440"
+
+    @pytest.mark.parametrize("version", ("0..", ""))
+    def test_version_parse_nok(self, version):
+        self.config.raw["version"]["number"] = version
+        with pytest.raises(ValueError):
+            self.config.version
+
+    @pytest.mark.parametrize("distance", (0, 7))
+    def test_dev(self, distance, git_tag, git_distance):
+        git_distance.return_value = distance
+        self.config.raw["version"]["number"] = "0.0.0"
+
+        assert self.config.version.dev == distance
+
+    @pytest.mark.parametrize("local", ("", "xxx"))
+    def test_local(self, local, git_tag, git_distance):
+        git_tag.return_value = local
+        self.config.raw["version"]["number"] = "0.0.0+loc.dd"
+
+        if local:
+            assert self.config.version.local == "xxx.loc.dd"
+        else:
+            assert self.config.version.local == "loc.dd"
+
 
 @pytest.mark.skipIf(has_git, reason="No git is found in PATH")
 def test_git_tag_ok(git_dir):
@@ -285,3 +333,13 @@ def test_git_distance_ok(git_dir):
 @pytest.mark.skipIf(has_git, reason="No git is found in PATH")
 def test_git_distance_no_tag(git_dir):
     assert scd.version.git_distance(git_dir, pytest.faux.gen_uuid()) is None
+
+
+def test_git_distance_no_distance(git_dir, external_command):
+    external_command.return_value = {
+        "code": os.EX_OK,
+        "stdout": ["v0.1.0"],
+        "stderr": []
+    }
+
+    assert scd.version.git_distance(git_dir, pytest.faux.gen_uuid()) == 0

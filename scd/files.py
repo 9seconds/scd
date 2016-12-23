@@ -22,9 +22,7 @@ except Exception as exc:
 
 
 DEFAULT_REPLACEMENTS = {
-    "major_minor_patch": "{{ major }}.{{ minor }}.{{ patch }}",
-    "major_minor": "{{ major }}.{{ minor }}",
-    "major": "{{ major }}",
+    "base": "{{ base }}",
     "full": "{{ full }}"
 }
 
