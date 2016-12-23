@@ -165,6 +165,7 @@ class TestGitSemver(VersionTest):
         version = self.config.version
 
         assert version.full == "1.2.0-{0}+{1}".format(tag_distance, tag_name)
+        assert version.base == "1.2.0"
         assert version.major == 1
         assert version.next_major == 2
         assert version.prev_major == 0
@@ -200,6 +201,69 @@ class TestGitSemver(VersionTest):
             "build": tag_name,
             "next_build": "",
             "prev_build": ""
+        }
+
+
+class TestPEP440(VersionTest):
+
+    SCHEME = "pep440"
+
+    @pytest.mark.parametrize("version", ("0..", ""))
+    def test_version_parse_nok(self, version):
+        self.config.raw["version"]["number"] = version
+        with pytest.raises(ValueError):
+            self.config.version
+
+    def test_version_parse_full(self):
+        self.config.raw["version"]["number"] = "1.2.0rc3.post3.dev0+local.dd"
+        version = self.config.version
+
+        assert version.base == "1.2.0rc3.post3.dev0+local.dd"
+        assert version.full == "1.2.0rc3.post3+local.dd"
+        assert version.major == 1
+        assert version.next_major == 2
+        assert version.prev_major == 0
+        assert version.minor == 2
+        assert version.next_minor == 3
+        assert version.prev_minor == 1
+        assert version.patch == 0
+        assert version.next_patch == 1
+        assert version.prev_patch == 0
+        assert version.prerelease_type == "rc"
+        assert version.prerelease == 3
+        assert version.next_prerelease == 4
+        assert version.prev_prerelease == 2
+        assert version.dev == 0
+        assert version.next_dev == 1
+        assert version.prev_dev == 0
+        assert version.post == 3
+        assert version.next_post == 4
+        assert version.prev_post == 2
+        assert version.local == "local.dd"
+
+        assert version.context == {
+            "full": version.full,
+            "base": version.base,
+            "major": version.major,
+            "next_major": version.next_major,
+            "prev_major": version.prev_major,
+            "minor": version.minor,
+            "next_minor": version.next_minor,
+            "prev_minor": version.prev_minor,
+            "patch": version.patch,
+            "next_patch": version.next_patch,
+            "prev_patch": version.prev_patch,
+            "prerelease_type": version.prerelease_type,
+            "prerelease": version.prerelease,
+            "next_prerelease": version.next_prerelease,
+            "prev_prerelease": version.prev_prerelease,
+            "dev": version.dev,
+            "next_dev": version.next_dev,
+            "prev_dev": version.prev_dev,
+            "post": version.post,
+            "prev_post": version.prev_post,
+            "next_post": version.next_post,
+            "local": version.local
         }
 
 
