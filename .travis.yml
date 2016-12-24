@@ -8,6 +8,7 @@ env:
   - TOXENV=py33-dev-test
   - TOXENV=py34-dev-test
   - TOXENV=py35-dev-test
+  - TOXENV=py36-dev-test
   - TOXENV=pypy2-dev-test
   - TOXENV=metrics
   - TOXENV=static
@@ -19,3 +20,7 @@ script: tox
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+matrix:
+  allow_failures:
+    - env: TOXENV=py36-dev-test  # Python 3.6 is not yet available in Travis
