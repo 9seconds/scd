@@ -6,7 +6,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
-import codecs
 import logging
 import os
 import os.path
@@ -132,7 +131,7 @@ def process_file(fileobj, config):
     need_to_save = False
     file_result = []
 
-    with codecs.open(fileobj.path, "rt", "utf-8") as filefp:
+    with open(fileobj.path, "rt") as filefp:
         for line in filefp:
             original_line = line
             for sr in fileobj.patterns:
@@ -143,7 +142,7 @@ def process_file(fileobj, config):
 
     if not OPTIONS.dry_run and need_to_save:
         logging.debug("Need to save %s", fileobj.path)
-        with codecs.open(fileobj.path, "wt", "utf-8") as filefp:
+        with open(fileobj.path, "wt") as filefp:
             filefp.writelines(file_result)
     else:
         logging.debug("No need to save %s", fileobj.path)
@@ -151,7 +150,7 @@ def process_file(fileobj, config):
 
 def guess_configfile():
     if OPTIONS.config:
-        return codecs.open(OPTIONS.config, "rt")
+        return open(OPTIONS.config, "rt")
 
     config = search_config_in_directory(os.getcwd())
     if not config:
@@ -162,7 +161,7 @@ def guess_configfile():
     if not config:
         raise ValueError("Cannot find configfile.")
 
-    return codecs.open(config, "rt")
+    return open(config, "rt")
 
 
 def search_config_in_directory(directory):

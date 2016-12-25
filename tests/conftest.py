@@ -75,7 +75,7 @@ def config(scheme, tmp_project, tmpdir):
                         "replace_raw": "{{ major }}.{{ patch }}.{{ minor }}"
                     },
                     {
-                        "search_raw": "{{ major_minor_patch }}"
+                        "search_raw": "{{ major }}\.{{ minor }}\.{{ patch }}"
                                       "(?=  # MAJOR_MINOR_PATCH)",
                         "replace": "major2"
                     },
@@ -94,7 +94,7 @@ def config(scheme, tmp_project, tmpdir):
                 "filename": "minor_major_patch",
                 "replacements": [
                     {
-                        "search": "full",
+                        "search": scheme,
                         "replace_raw": "{{ minor }}.{{ major }}.{{ patch }}"
                     }
                 ]
@@ -103,7 +103,7 @@ def config(scheme, tmp_project, tmpdir):
                 "filename": "minor_major",
                 "replacements": [
                     {
-                        "search": "major_minor",
+                        "search": scheme,
                         "replace": "{{ major }}.{{ minor }}"
                     }
                 ]
@@ -123,16 +123,17 @@ def config(scheme, tmp_project, tmpdir):
             }
         ],
         "search_patterns": {
-            "full_version_w_comment": "{{ full }}(?=.*?# FULL)",
-            "vsearch": "v{{ full }}"
+            "full": "{{ %s }}" % scheme,
+            "full_version_w_comment": "{{ %s }}(?=.*?# FULL)" % scheme,
+            "vsearch": "v{{ %s }}" % scheme
         },
         "replacement_patterns": {
             "major2": "{{ major }}",
             "vreplace": "v{{ full }}"
         },
         "defaults": {
-            "replacement": "major_minor_patch",
-            "search": "major"
+            "replacement": "{{ major }}",
+            "search": scheme
         }
     }
 

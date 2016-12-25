@@ -175,7 +175,12 @@ def make_pattern(base_pattern):
 
     pattern = make_template(base_pattern)
     pattern = pattern.render(**patterns)
-    pattern = re.compile(pattern, re.VERBOSE | re.UNICODE)
+    try:
+        pattern = re.compile(pattern, re.VERBOSE | re.UNICODE)
+    except Exception as exc:
+        logging.error("Base pattern: %s, replaced %s, error: %s",
+                      base_pattern, pattern, exc)
+        raise ValueError("Cannot parse pattern {0}".format(base_pattern))
 
     return pattern
 
