@@ -30,3 +30,13 @@ files:
     replacements:
       - search: setuppy
         replace: full
+  - filename: docs/source/conf.py
+    replacements:
+      - search_raw: "^version\\s=\\s'{{ pep440 }}'"
+        replace_raw: "{{ major }}.{{ minor }}"
+      - search_raw: "^release\\s=\\s'{{ pep440 }}'"
+        replace_raw: "{{ major }}.{{ minor }}.{{ patch }}"
+  - filename: scd/__init__.py
+    replacements:
+      - search_raw: '^__version__\s=\s"{{ pep440 }}"'
+        replace_raw: "{{ major }}.{{ minor }}.{{ patch }}{% if post %}.post{{ post }}{% endif %}{% if dev %}.dev{{ dev }}{% endif %}"
