@@ -27,7 +27,7 @@ else:
             @six.wraps(func)
             def inner_decorator(*fargs, **fkwargs):
                 key = "\x00".join(
-                    six.text_type(hash(farg)) for farg in sorted(fargs))
+                    six.text_type(hash(farg)) for farg in fargs)
                 key += "\x00".join(
                     six.text_type(k) + "\x00" + six.text_type(hash(v))
                     for k, v in sorted(fkwargs.items()))
