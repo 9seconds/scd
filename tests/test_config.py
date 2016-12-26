@@ -25,12 +25,13 @@ def test_ok(scheme, config, tmp_project):
         "vreplace": "v{{ full }}"
     }
     assert conf.search_patterns == {
-        "full_version_w_comment": "{{ full }}(?=.*?# FULL)",
-        "vsearch": "v{{ full }}"
+        "full_version_w_comment": "{{ %s }}(?=.*?\#\sFULL)" % scheme,
+        "vsearch": "v{{ %s }}" % scheme,
+        "full": "{{ %s }}" % scheme
     }
     assert conf.defaults == {
-        "replacement": "major_minor_patch",
-        "search": "major"
+        "replacement": "major2",
+        "search": scheme
     }
 
     filenames = {fileobj.filename for fileobj in conf.files}

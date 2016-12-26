@@ -6,11 +6,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import re
 
 import pytest
 
 import scd.files
+import scd.utils
 
 
 @pytest.mark.parametrize("replacement", ("base", "full"))
@@ -34,6 +34,11 @@ def minimal_config():
 def full_config(config, tmp_project):
     config_file = tmp_project.join("config.json").strpath
     return scd.config.Config(config_file, config)
+
+
+@pytest.fixture
+def firstfile(full_config):
+    return full_config.files[0]
 
 
 class TestSearchReplace(object):
@@ -66,6 +71,70 @@ class TestSearchReplace(object):
 
 class TestFile(object):
 
-    def test_filename(self, full_config):
-        files = full_config.files
-        assert full_config.files[0].filename == "c"
+    def test_filename(self, firstfile):
+        assert firstfile.filename == "full_version"
+
+    def test_assert_path(self, firstfile, tmp_project):
+        assert firstfile.path == tmp_project.join("full_version").strpath
+
+    def test_default_replacements(self, firstfile):
+        assert firstfile.default_replacements == {
+            k: scd.files.make_template(v)
+            for k, v in scd.files.DEFAULT_REPLACEMENTS.items()}
+
+    def test_all_replacements(self, firstfile):
+        assert firstfile.all_replacements == {
+            "base": scd.files.make_template(
+                scd.files.DEFAULT_REPLACEMENTS["base"]),
+            "full": scd.files.make_template(
+                scd.files.DEFAULT_REPLACEMENTS["full"]),
+            "major2": scd.files.make_template("{{ major }}"),
+            "vreplace": scd.files.make_template("v{{ full }}")
+        }
+
+    def test_default_search_patterns(self, firstfile):
+        assert firstfile.default_search_patterns == {
+            name: scd.files.make_pattern("{{ %s }}" % name)
+            for name in scd.utils.get_version_plugins()
+        }
+
+    def test_all_search_patterns(self, scheme, firstfile):
+        assert firstfile.all_search_patterns == dict(list({
+            "full": scd.files.make_pattern("{{ %s }}" % scheme),
+            "full_version_w_comment": scd.files.make_pattern(
+                "{{ %s }}(?=.*?\#\sFULL)" % scheme),
+            "vsearch": scd.files.make_pattern("v{{ %s }}" % scheme)
+        }.items()) + list(firstfile.default_search_patterns.items()))
+
+    def test_default_search_pattern(self, scheme, firstfile):
+        assert firstfile.default_search_pattern == scd.files.make_pattern(
+            "{{ %s }}" % scheme)
+
+    def test_default_replacement_pattern(self, firstfile):
+        assert firstfile.default_replace_pattern == scd.files.make_template(
+            "{{ major }}")
+
+    def test_patterns(self, full_config):
+        for fileobj in full_config.files:
+            assert fileobj.patterns
+
+
+def test_validate_access_ok(full_config):
+    assert scd.files.validate_access(full_config.files)
+
+
+def test_validate_access_absentfile(full_config, tmp_project):
+    tmp_project.join("full_version").remove()
+    assert not scd.files.validate_access(full_config.files)
+
+
+def test_validate_access_not_a_file(full_config, tmp_project):
+    tmp_project.join("full_version").remove()
+    tmp_project.join("full_version").mkdir()
+    assert not scd.files.validate_access(full_config.files)
+
+
+@pytest.mark.parametrize("perm", (os.R_OK, os.W_OK))
+def test_validate_access_not_accessible(perm, full_config, tmp_project):
+    tmp_project.join("full_version").chmod(perm)
+    assert not scd.files.validate_access(full_config.files)

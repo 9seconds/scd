@@ -107,11 +107,14 @@ class File(Hashable):
 
     @property
     def default_search_patterns(self):
-        return {}
+        return {
+            name: make_pattern("{{ %s }}" % name)
+            for name in scd.utils.get_version_plugins()
+        }
 
     @property
     def all_search_patterns(self):
-        patterns = self.default_replacements.copy()
+        patterns = self.default_search_patterns.copy()
         patterns.update(
             (k, make_pattern(v))
             for k, v in self.config.search_patterns.items())

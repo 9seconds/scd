@@ -46,6 +46,7 @@ def tmp_project(scheme, tmpdir):
     tmpdir.join("minor_major_patch").write("0.1.0")
     tmpdir.join("minor_major").write("HELLO 0.1 BYE")
     tmpdir.join("clean").write("nothing to do here")
+    tmpdir.join("major").write("1")
 
     return tmpdir
 
@@ -62,8 +63,8 @@ def config(scheme, tmp_project, tmpdir):
                 "filename": "full_version",
                 "replacements": [
                     {
-                        "search": "full_version",
-                        "replace": "{{ full }}"
+                        "search": "full",
+                        "replace_raw": "{{ full }}"
                     }
                 ]
             },
@@ -76,11 +77,11 @@ def config(scheme, tmp_project, tmpdir):
                     },
                     {
                         "search_raw": "{{ major }}\.{{ minor }}\.{{ patch }}"
-                                      "(?=  # MAJOR_MINOR_PATCH)",
+                                      "(?=\s{2}\#\sMAJOR_MINOR_PATCH)",
                         "replace": "major2"
                     },
                     {
-                        "search_raw": "{{ major }}(?=.*?# MAJOR)"
+                        "search_raw": "{{ major }}(?=.*?\#\sMAJOR)"
                     }
                 ]
             },
@@ -104,7 +105,7 @@ def config(scheme, tmp_project, tmpdir):
                 "replacements": [
                     {
                         "search": scheme,
-                        "replace": "{{ major }}.{{ minor }}"
+                        "replace_raw": "{{ major }}.{{ minor }}"
                     }
                 ]
             },
@@ -124,7 +125,7 @@ def config(scheme, tmp_project, tmpdir):
         ],
         "search_patterns": {
             "full": "{{ %s }}" % scheme,
-            "full_version_w_comment": "{{ %s }}(?=.*?# FULL)" % scheme,
+            "full_version_w_comment": "{{ %s }}(?=.*?\#\sFULL)" % scheme,
             "vsearch": "v{{ %s }}" % scheme
         },
         "replacement_patterns": {
@@ -132,7 +133,7 @@ def config(scheme, tmp_project, tmpdir):
             "vreplace": "v{{ full }}"
         },
         "defaults": {
-            "replacement": "{{ major }}",
+            "replacement": "major2",
             "search": scheme
         }
     }
