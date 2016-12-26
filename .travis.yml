@@ -12,6 +12,7 @@ env:
   - TOXENV=pypy2-dev-test
   - TOXENV=metrics
   - TOXENV=static
+  - TOXENV=docs
 
 install:
   - pip install tox coverage
