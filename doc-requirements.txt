@@ -1,2 +1,3 @@
 Sphinx
 sphinx-nameko-theme
+pygments-github-lexers

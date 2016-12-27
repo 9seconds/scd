@@ -5,7 +5,7 @@ Installation
 <https://pypi.python.org>`_ so if you are familiar with Python package
 installation, it would be really straightforward.
 
-Tool is using Python >= 2.7.
+Tool works with Python>=2.7 and PyPy2.
 
 
 Prerequisites
@@ -24,6 +24,8 @@ To install setuptools follow `official guide
 <http://setuptools.readthedocs.io/en/latest/setuptools.html#installing-setuptools>`_ and please check repository of your OS: there is a great possiblity that you already have it installed.
 
 
+.. _installation-install-from-cheese-shop:
+
 Install from Cheese Shop
 ++++++++++++++++++++++++
 
@@ -38,6 +40,28 @@ Otherwise, please do
 .. code-block:: bash
 
     pip install --user scd
+
+Also, it is possible to use following extras to add some optional
+features to your installation.
+
++------------+---------------------------------------------+
+| Name       | Description                                 |
++============+=============================================+
+| yaml       | Enable support of YAML configuration files. |
++------------+---------------------------------------------+
+| toml       | Enable support of TOML configuration files. |
++------------+---------------------------------------------+
+| simplejson | Use simplejson for JSON parsing.            |
++------------+---------------------------------------------+
+| colors     | Enable support of colors in output.         |
++------------+---------------------------------------------+
+
+So if you want to install scd with YAML support and colors enabled,
+please do following:
+
+.. code-block:: bash
+
+    pip install scd[yaml,colors]
 
 
 Install from sources
