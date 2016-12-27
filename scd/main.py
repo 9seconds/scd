@@ -106,7 +106,7 @@ def get_options():
         "-c", "--config",
         metavar="CONFIG_PATH",
         default=None,
-        help="Path to the config. Default is $(pwd)/.scd.yaml.")
+        help="Path to the config. By default autodiscovery will be performed.")
     parser.add_argument(
         "files",
         metavar="FILE_PATH",
