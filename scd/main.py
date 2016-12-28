@@ -88,12 +88,13 @@ def get_options():
         description=DESCRIPTION,
         epilog=EPILOG)
 
-    parser.add_argument(
+    verbosity = parser.add_mutually_exclusive_group()
+    verbosity.add_argument(
         "-d", "--debug",
         action="store_true",
         default=False,
         help="run in debug mode")
-    parser.add_argument(
+    verbosity.add_argument(
         "-v", "--verbose",
         action="store_true",
         help="run tool in verbose mode")

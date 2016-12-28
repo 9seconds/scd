@@ -21,6 +21,7 @@ totally equialent.
 **YAML**:
 
 .. code-block:: yaml
+  :linenos:
 
    version:
      number: 1.2.3
@@ -43,6 +44,7 @@ totally equialent.
 **TOML**:
 
 .. code-block:: toml
+  :linenos:
 
    [version]
    number = "1.2.3"
@@ -65,6 +67,7 @@ totally equialent.
 **JSON**:
 
 .. code-block:: json
+  :linenos:
 
    {
        "version": {
@@ -91,6 +94,7 @@ the same datastructure. If you are familiar with `JSON Schema
 <http://json-schema.org/>`_, you may find that useful:
 
 .. code-block:: json
+  :linenos:
 
   {
       "$schema": "http://json-schema.org/draft-04/schema",
@@ -186,6 +190,7 @@ Full Example
 ------------
 
 .. code-block:: yaml
+  :linenos:
 
    version:
      number: 1.0.1
@@ -220,6 +225,7 @@ Shortest Example
 ----------------
 
 .. code-block:: yaml
+  :linenos:
 
     version:
       number: 1.0.1
@@ -458,6 +464,7 @@ be used. But do not keep element empty. There is special placeholder
 config like:
 
 .. code-block:: yaml
+  :linenos:
 
     version:
       number: 1.0.1
