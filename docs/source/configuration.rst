@@ -502,8 +502,125 @@ Search Context
 Replacement Context
 -------------------
 
+Replacement context is totally dependend on version scheme provided.
+Moreover, every scheme provides its own set of context variables, and
+it is possible that you have a scheme which is not version numbered (I
+worked with such scheme once, and it was not that bad as one can think).
+
+Of course, there is a number of some predefined context variables for
+replacements, you may find them in `replacement_patterns`_ section.
+
+For next sections we need to make some assumptions on versions.
+Let's pretend that we have version ``1.2.0`` in our config
+file, using Git flavor of a scheme, operating on commit
+``ff5cff170e93ab4f7dd87437951c6646e297c538`` which is 5 commits left
+from latest version tag.
+
+
 SemVer
 ******
 
++------------------+---------+--------------------+
+| Context Variable | Type    | Value From Example |
++==================+=========+====================+
+| base             | string  | 1.2.0              |
++------------------+---------+--------+-----------+
+| full             | string  | 1.2.0-5+ff5cff1    |
++------------------+---------+--------------------+
+| major            | integer | 1                  |
++------------------+---------+--------------------+
+| next_major       | integer | 2                  |
++------------------+---------+--------------------+
+| prev_major       | integer | 0                  |
++------------------+---------+--------------------+
+| minor            | integer | 2                  |
++------------------+---------+--------------------+
+| next_minor       | integer | 3                  |
++------------------+---------+--------------------+
+| prev_minor       | integer | 1                  |
++------------------+---------+--------------------+
+| patch            | integer | 0                  |
++------------------+---------+--------------------+
+| next_patch       | integer | 1                  |
++------------------+---------+--------------------+
+| prev_patch       | integer | 0                  |
++------------------+---------+--------------------+
+| prerelase        | string  | 5                  |
++------------------+---------+--------------------+
+| next_prerelease  | string  | 6                  |
++------------------+---------+--------------------+
+| prev_prerelease  | string  | 4                  |
++------------------+---------+--------------------+
+| build            | string  | ff5cff1            |
++------------------+---------+--------------------+
+| next_build       | string  | ff5cff2            |
++------------------+---------+--------------------+
+| prev_build       | string  | ff5cff0            |
++------------------+---------+--------------------+
+
+As you can see, this is rather trivial. The most interesting parts are
+build and prerelase management. By default, scd will try to guess next
+and previous parts (it increments latest number found in the string).
+Sometimes it make sense (``build5`` for example), sometimes not (Git
+commit hash) so please pay attention to your strategy.
+
+
 PEP440
 ******
+
+To show all possible values, let's consider base version as ``1.2.0rc1``.
+
++------------------+---------+-------------------------------+
+| Context Variable | Type    | Value From Example            |
++==================+=========+===============================+
+| base             | string  | 1.2.0rc1                      |
++------------------+---------+--------------+----------------+
+| full             | string  | 1.2.0rc1.dev5+ff5cff1         |
++------------------+---------+----------------------+--------+
+| maximum          | string  | 0!1.2.0rc1.post0.dev5+ff5cff1 |
++------------------+---------+-------------------------------+
+| epoch            | integer | 0                             |
++------------------+---------+-------------------------------+
+| major            | integer | 1                             |
++------------------+---------+-------------------------------+
+| next_major       | integer | 2                             |
++------------------+---------+-------------------------------+
+| prev_major       | integer | 0                             |
++------------------+---------+-------------------------------+
+| minor            | integer | 2                             |
++------------------+---------+-------------------------------+
+| next_minor       | integer | 3                             |
++------------------+---------+-------------------------------+
+| prev_minor       | integer | 1                             |
++------------------+---------+-------------------------------+
+| patch            | integer | 0                             |
++------------------+---------+-------------------------------+
+| next_patch       | integer | 1                             |
++------------------+---------+-------------------------------+
+| prev_patch       | integer | 0                             |
++------------------+---------+-------------------------------+
+| prerelase        | integer | 1                             |
++------------------+---------+-------------------------------+
+| prerelase_type   | string  | rc                            |
++------------------+---------+-------------------------------+
+| next_prerelease  | integer | 2                             |
++------------------+---------+-------------------------------+
+| prev_prerelease  | integer | 0                             |
++------------------+---------+-------------------------------+
+| dev              | integer | 5                             |
++------------------+---------+-------------------------------+
+| next_dev         | integer | 6                             |
++------------------+---------+-------------------------------+
+| prev_dev         | integer | 4                             |
++------------------+---------+-------------------------------+
+| post             | integer | 0                             |
++------------------+---------+-------------------------------+
+| next_post        | integer | 1                             |
++------------------+---------+-------------------------------+
+| prev_post        | integer | 0                             |
++------------------+---------+-------------------------------+
+| local            | string  | ff5cff1                       |
++------------------+---------+-------------------------------+
+
+So, more or less the same. The only difference is that ``full`` won't
+display data which is 0 or empty. ``maximum`` does.

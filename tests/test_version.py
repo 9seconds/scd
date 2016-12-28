@@ -232,6 +232,7 @@ class TestPEP440(VersionTest):
 
         assert version.base == "12!1.2.0rc3.post3.dev0+local.dd"
         assert version.full == "12!1.2.0rc3.post3+local.dd"
+        assert version.maximum == "12!1.2.0rc3.post3.dev0+local.dd"
         assert version.epoch == 12
         assert version.major == 1
         assert version.next_major == 2
@@ -257,6 +258,7 @@ class TestPEP440(VersionTest):
         assert version.context == {
             "full": version.full,
             "base": version.base,
+            "maximum": version.maximum,
             "major": version.major,
             "epoch": version.epoch,
             "next_major": version.next_major,

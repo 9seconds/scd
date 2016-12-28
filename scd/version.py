@@ -277,6 +277,7 @@ class PEP440(Version):
             "base": self.base,
             "epoch": self.epoch,
             "major": self.major,
+            "maximum": self.maximum,
             "next_major": self.next_major,
             "prev_major": self.prev_major,
             "minor": self.minor,
@@ -315,6 +316,17 @@ class PEP440(Version):
             consturcted += "+{0.local}".format(self)
 
         return consturcted
+
+    @property
+    def maximum(self):
+        constructed = "{0.epoch}!{0.major}.{0.minor}.{0.patch}".format(self)
+        if self.prerelease:
+            constructed += "{0.prerelease_type}{0.prerelease}".format(self)
+        constructed += ".post{0.post}.dev{0.dev}".format(self)
+        if self.local:
+            constructed += "+{0.local}".format(self)
+
+        return constructed
 
     def __str__(self):
         return (
