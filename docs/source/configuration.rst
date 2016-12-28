@@ -393,15 +393,111 @@ Please be noticed, that values are *names*, not raw patterns. Keys from
 ``files``
 ---------
 
-Files are the list of file structures which scd should worry about. Each
-structure looks like this:
+Files are the list of file structures which scd should worry about. If
+scd does not have a section in config file, it will ignore file even
+if it explicitly set in CLI. Well, because nobody knows how to manage
+unknown file.
+
+This is a mapping between filenames and a list of search/replacements.
+
+Filename is rather simple: it is POSIX path to the file, relative
+to the config. POSIX means that separator is ``/``, not ``\``.
+So if you have a filename :file:`docs/source/conf.py`, it will
+work perfectly on Unix/OS X and Windows. On Windows, actually, scd
+will interpret this path as :file:`docs\source\conf.py` os it is
+crossplatform. Another mentioned thing about filename is that it
+is relative to the config file. So with file above and config file
+path :file:`/home/username/project/.scd.yaml`, scd will process
+:file:`/home/username/project/docs/source/conf.py`.
+
+Search/replacements are the list with following rules:
+
++-------------+---------------------------------------------------------------------------------------------+
+| Parameter   | Description                                                                                 |
++=============+=============================================================================================+
+| search      | The *name* of the search pattern from ``search_patterns`` or some globally defined.         |
+|             |                                                                                             |
+|             | Please check `search_patterns`_ for details.                                                |
+|             |                                                                                             |
+|             | **Note**: this is mutually exclusive with ``search_raw``. Please define either              |
+|             | ``search`` or ``search_raw``.                                                               |
++-------------+---------------------------------------------------------------------------------------------+
+| search_raw  | The *pattern* to use. This is actual regular expression which can be used to define         |
+|             | some search pattern ad-hoc, without populating ``search_patterns`` section with             |
+|             | patterns which require only once.                                                           |
+|             |                                                                                             |
+|             | Please check `search_patterns`_ for details on how to compose such regular expressions.     |
+|             |                                                                                             |
+|             | **Note**: this is mutually exclusive with ``search``. Please define either ``search``       |
+|             | or ``search_raw``.                                                                          |
++-------------+---------------------------------------------------------------------------------------------+
+| replace     | The *name* of the replacement pattern from ``replacement_patterns`` or some globally        |
+|             | defined.                                                                                    |
+|             |                                                                                             |
+|             | Please check `replacement_patterns`_ for details.                                           |
+|             |                                                                                             |
+|             | **Note**: this is mutually exclusive with ``replace_raw``. Please define either             |
+|             | ``replace`` either ``replace_raw``                                                          |
++-------------+---------------------------------------------------------------------------------------------+
+| replace_raw | The *replacement* template to use. This is actual Jinja2 template which can be used         |
+|             | to define some ad-hoc replacement without populating ``replacement_patterns`` section       |
+|             | with stuff which require only once.                                                         |
+|             |                                                                                             |
+|             | Please check `replacement_patterns`_ for details.                                           |
+|             |                                                                                             |
+|             | **Note**: this is mutually exclusive with ``replace``. Please define either ``replace_raw`` |
+|             | either ``replace``.                                                                         |
++-------------+---------------------------------------------------------------------------------------------+
+
+Please be noticed that at least something has to be defined. You may
+postpone any parameter (no ``search`` or ``search_raw`` for example,
+but if you define any, please remember about mutual exclusive groups,
+mentioned in table), then parameters from `defaults`_ section will
+be used. But do not keep element empty. There is special placeholder
+``default`` for that. So if you want to use defaults only, please use
+config like:
+
+.. code-block:: yaml
+
+    version:
+      number: 1.0.1
+      scheme: semver
+
+    defaults:
+      search: semver
+      replace: base
+
+    files:
+      setup.py:
+        - default
+
+In that case ``semver`` search pattern and ``base`` replacement will be
+used for :file:`setup.py`.
 
 
 Predefined Template Context
 +++++++++++++++++++++++++++
 
+As it was previously mentioned, there are several predefined context
+variables which might be used in templates for search and replacements.
+Also, please remember, that these contexts are different: you cannot use
+context vars from replacements to make search pattern.
+
 Search Context
 --------------
+
++------------------+----------------------------------------------------------------------------------+
+| Context Variable | Description                                                                      |
++==================+==================================================================================+
+| pep440           | This searches version number, valid according to :pep:`440`.                     |
++------------------+----------------------------------------------------------------------------------+
+| git_pep440       | Same as ``pep440``.                                                              |
++------------------+----------------------------------------------------------------------------------+
+| semver           | This searches version number, valid according to `semver <http://semver.org/>`_. |
++------------------+----------------------------------------------------------------------------------+
+| git_semver       | Same as ``semver``.                                                              |
++------------------+----------------------------------------------------------------------------------+
+
 
 Replacement Context
 -------------------
