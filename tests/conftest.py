@@ -58,71 +58,44 @@ def config(scheme, tmp_project, tmpdir):
             "scheme": scheme,
             "number": "1.2.3"
         },
-        "files": [
-            {
-                "filename": "full_version",
-                "replacements": [
-                    {
-                        "search": "full",
-                        "replace_raw": "{{ full }}"
-                    }
-                ]
-            },
-            {
-                "filename": "all",
-                "replacements": [
-                    {
-                        "search": "full_version_w_comment",
-                        "replace_raw": "{{ major }}.{{ patch }}.{{ minor }}"
-                    },
-                    {
-                        "search_raw": "{{ major }}\.{{ minor }}\.{{ patch }}"
-                                      "(?=\s{2}\#\sMAJOR_MINOR_PATCH)",
-                        "replace": "major2"
-                    },
-                    {
-                        "search_raw": "{{ major }}(?=.*?\#\sMAJOR)"
-                    }
-                ]
-            },
-            {
-                "filename": "vcomplex",
-                "replacements": [
-                    {"search": "vsearch", "replace": "vreplace"}
-                ]
-            },
-            {
-                "filename": "minor_major_patch",
-                "replacements": [
-                    {
-                        "search": scheme,
-                        "replace_raw": "{{ minor }}.{{ major }}.{{ patch }}"
-                    }
-                ]
-            },
-            {
-                "filename": "minor_major",
-                "replacements": [
-                    {
-                        "search": scheme,
-                        "replace_raw": "{{ major }}.{{ minor }}"
-                    }
-                ]
-            },
-            {
-                "filename": "major",
-                "replacements": ["default"]
-
-            },
-            {
-                "filename": "clean",
-                "replacements": ["default"]
-            },
-            {
-                "filename": "complex",
-                "replacements": ["default"]
-            }
-        ],
+        "files": {
+            "full_version": [
+                {
+                    "search": "full",
+                    "replace_raw": "{{ full }}"
+                }
+            ],
+            "all": [
+                {
+                    "search": "full_version_w_comment",
+                    "replace_raw": "{{ major }}.{{ patch }}.{{ minor }}"
+                },
+                {
+                    "search_raw": "{{ major }}\.{{ minor }}\.{{ patch }}"
+                    "(?=\s{2}\#\sMAJOR_MINOR_PATCH)",
+                    "replace": "major2"
+                },
+                {"search_raw": "{{ major }}(?=.*?\#\sMAJOR)"}
+            ],
+            "vcomplex": [
+                {"search": "vsearch", "replace": "vreplace"}
+            ],
+            "minor_major_patch": [
+                {
+                    "search": scheme,
+                    "replace_raw": "{{ minor }}.{{ major }}.{{ patch }}"
+                }
+            ],
+            "minor_major": [
+                {
+                    "search": scheme,
+                    "replace_raw": "{{ major }}.{{ minor }}"
+                }
+            ],
+            "major": ["default"],
+            "clean": ["default"],
+            "complex": ["default"]
+        },
         "search_patterns": {
             "full": "{{ %s }}" % scheme,
             "full_version_w_comment": "{{ %s }}(?=.*?\#\sFULL)" % scheme,

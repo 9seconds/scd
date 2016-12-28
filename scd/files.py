@@ -68,9 +68,10 @@ class SearchReplace(Hashable):
 @six.python_2_unicode_compatible
 class File(Hashable):
 
-    __slots__ = "config", "data"
+    __slots__ = "name", "config", "data"
 
-    def __init__(self, config, data):
+    def __init__(self, name, data, config):
+        self.name = name
         self.config = config
         self.data = data
 
@@ -86,7 +87,7 @@ class File(Hashable):
 
     @property
     def filename(self):
-        return os.path.join(*self.data["filename"].split("/"))
+        return os.path.join(*self.name.split("/"))
 
     @property
     def path(self):
@@ -133,7 +134,7 @@ class File(Hashable):
     def patterns(self):
         patterns = []
 
-        for item in self.data["replacements"]:
+        for item in self.data:
             if item == "default":
                 patterns.append(SearchReplace(
                     self.default_search_pattern,

@@ -25,7 +25,7 @@ def minimal_config():
             "scheme": "semver",
             "number": "1.2.3-pre1+build10"
         },
-        "files": []
+        "files": {}
     }
     return scd.config.Config(pytest.faux.gen_alpha(), config)
 
@@ -38,7 +38,10 @@ def full_config(config, tmp_project):
 
 @pytest.fixture
 def firstfile(full_config):
-    return full_config.files[0]
+    for fobj in full_config.files:
+        if fobj.filename == "full_version":
+            return fobj
+    pytest.fail("Cannot find full_version fileobj")
 
 
 class TestSearchReplace(object):

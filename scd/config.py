@@ -26,6 +26,7 @@ except ImportError:
 Parser = collections.namedtuple("Parser", ["name", "func"])
 
 CONFIG_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
     "required": ["version", "files"],
     "properties": {
@@ -46,29 +47,40 @@ CONFIG_SCHEMA = {
             }
         },
         "files": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["filename", "replacements"],
-                "properties": {
-                    "filename": {"type": "string"},
-                    "replacements": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {"type": "string", "enum": ["default"]},
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        {"type": "string", "enum": ["default"]},
+                        {
+                            "type": "object",
+                            "properties": {
+                                "search": {"type": "string"},
+                                "search_raw": {"type": "string"},
+                                "replace": {"type": "string"},
+                                "replace_raw": {"type": "string"}
+                            },
+                            "anyOf": [
                                 {
-                                    "type": "object",
-                                    "properties": {
-                                        "search": {"type": "string"},
-                                        "search_raw": {"type": "string"},
-                                        "replace": {"type": "string"},
-                                        "replace_raw": {"type": "string"}
-                                    }
+                                    "required": ["search"],
+                                    "not": {"required": ["search_raw"]}
+                                },
+                                {
+                                    "required": ["search_raw"],
+                                    "not": {"required": ["search"]}
+                                },
+                                {
+                                    "required": ["replace"],
+                                    "not": {"required": ["replace_raw"]}
+                                },
+                                {
+                                    "required": ["replace_raw"],
+                                    "not": {"required": ["replace"]}
                                 }
                             ]
                         }
-                    }
+                    ]
                 }
             }
         },
@@ -141,7 +153,10 @@ class Config(Hashable):
 
     @property
     def files(self):
-        return [scd.files.File(self, conf) for conf in self.raw["files"]]
+        return [
+            scd.files.File(name, conf, self)
+            for name, conf in self.raw["files"].items()
+        ]
 
     @property
     def replacement_patterns(self):
@@ -223,10 +238,11 @@ def parse(fileobj):
         try:
             parsed = parser.func(content)
             logging.info("Parsed config as %s", parser.name)
-            break
+            logging.debug("Parsed config content:\n%s",
+                          json.dumps(parsed, sort_keys=True, indent=4))
         except Exception as exc:
             logging.debug("Cannot parse %s: %s", parser.name, exc)
-    else:
-        raise ValueError("Cannot parse {0}".format(fileobj.name))
+        else:
+            return Config(fileobj.name, parsed)
 
-    return Config(fileobj.name, parsed)
+    raise ValueError("Cannot parse {0}".format(fileobj.name))

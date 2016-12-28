@@ -37,9 +37,8 @@ totally equialent.
      replace: full
 
    files:
-     - filename: setup.py
-       replacements:
-         - default
+     setup.py:
+       - default
 
 **TOML**:
 
@@ -59,9 +58,8 @@ totally equialent.
    search = "full"
    replace = "full"
 
-   [[files]]
-   filename = "setup.py"
-   replacements = ["default"]
+   [files]
+   "setup.py" = ["default"]
 
 
 **JSON**:
@@ -83,14 +81,9 @@ totally equialent.
            "search": "full",
            "replace": "full"
        },
-       "files": [
-           {
-               "filename": "setup.py",
-               "replacements": [
-                   "default"
-               ]
-           }
-       ]
+       "files": {
+           "setup.py": ["default"]
+       }
    }
 
 I hope you get an idea: all these formats are representing
@@ -99,71 +92,83 @@ the same datastructure. If you are familiar with `JSON Schema
 
 .. code-block:: json
 
-   {
-       "type": "object",
-       "required": ["version", "files"],
-       "properties": {
-           "version": {
-               "type": "object",
-               "required": ["scheme", "number"],
-               "properties": {
-                   "scheme": {
-                       "type": "string",
-                       "enum": ["pep440", "git_pep440", "semver", "git_semver"]
-                   },
-                   "number": {
-                       "oneOf": [
-                           {"type": "number"},
-                           {"type": "string"}
-                       ]
-                   }
-               }
-           },
-           "files": {
-               "type": "array",
-               "items": {
-                   "type": "object",
-                   "required": ["filename", "replacements"],
-                   "properties": {
-                       "filename": {"type": "string"},
-                       "replacements": {
-                           "type": "array",
-                           "items": {
-                               "oneOf": [
-                                   {"type": "string", "enum": ["default"]},
-                                   {
-                                       "type": "object",
-                                       "properties": {
-                                           "search": {"type": "string"},
-                                           "search_raw": {"type": "string"},
-                                           "replace": {"type": "string"},
-                                           "replace_raw": {"type": "string"}
-                                       }
-                                   }
-                               ]
-                           }
-                       }
-                   }
-               }
-           },
-           "search_patterns": {
-               "type": "object",
-               "additionalProperties": {"type": "string"}
-           },
-           "replacement_paterns": {
-               "type": "object",
-               "additionalProperties": {"type": "string"}
-           },
-           "defaults": {
-               "type": "object",
-               "properties": {
-                   "search": {"type": "string"},
-                   "replacement": {"type": "string"}
-               },
-               "additionalProperties": false
-           }
-       }
-   }
+  {
+      "$schema": "http://json-schema.org/draft-04/schema",
+      "type": "object",
+      "required": ["version", "files"],
+      "properties": {
+          "version": {
+              "type": "object",
+              "required": ["scheme", "number"],
+              "properties": {
+                  "scheme": {
+                      "type": "string",
+                      "enum": ["pep440", "git_pep440", "semver", "git_semver"]
+                  },
+                  "number": {
+                      "oneOf": [
+                          {"type": "number"},
+                          {"type": "string"}
+                      ]
+                  }
+              }
+          },
+          "files": {
+              "type": "object",
+              "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                      "oneOf": [
+                          {"type": "string", "enum": ["default"]},
+                          {
+                              "type": "object",
+                              "properties": {
+                                  "search": {"type": "string"},
+                                  "search_raw": {"type": "string"},
+                                  "replace": {"type": "string"},
+                                  "replace_raw": {"type": "string"}
+                              },
+                              "anyOf": [
+                                  {
+                                      "required": ["search"],
+                                      "not": {"required": ["search_raw"]}
+                                  },
+                                  {
+                                      "required": ["search_raw"],
+                                      "not": {"required": ["search"]}
+                                  },
+                                  {
+                                      "required": ["replace"],
+                                      "not": {"required": ["replace_raw"]}
+                                  },
+                                  {
+                                      "required": ["replace_raw"],
+                                      "not": {"required": ["replace"]}
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              }
+          },
+          "search_patterns": {
+              "type": "object",
+              "additionalProperties": {"type": "string"}
+          },
+          "replacement_paterns": {
+              "type": "object",
+              "additionalProperties": {"type": "string"}
+          },
+          "defaults": {
+              "type": "object",
+              "properties": {
+                  "search": {"type": "string"},
+                  "replacement": {"type": "string"}
+              },
+              "additionalProperties": false
+          }
+      }
+  }
 
 Please be noticed that it is possible to extend allowed schemes with
 external entrypoints but :pep:`440` and `SemVer <http://semver.org/>`_
@@ -201,17 +206,14 @@ Full Example
      replace: full
 
    files:
-     - filename: setup.py
-       replacements:
-         - search_raw: "(?>=version\\s=\\s\\\"){{ full }}"
-     - filename: docs/conf.py
-       replacements:
-         - default
-         - search: vfull
-           replace: major_minor_p
-         - search: major_minor_block
-           replace_raw: "{{ next_major }}"
-
+     setup.py:
+       - search_raw: "(?>=version\\s=\\s\\\"){{ full }}"
+     docs/conf.py:
+       - default
+       - search: vfull
+         replace: major_minor_p
+       - search: major_minor_block
+         replace_raw: "{{ next_major }}"
 
 
 Shortest Example
@@ -228,9 +230,8 @@ Shortest Example
       replace: base
 
     files:
-      - filename: setup.py
-        replacements:
-          - default
+      setup.py:
+        - default
 
 So, as you can see, config can be large and can be small. It is up to
 you what to choose.
@@ -394,16 +395,6 @@ Please be noticed, that values are *names*, not raw patterns. Keys from
 
 Files are the list of file structures which scd should worry about. Each
 structure looks like this:
-
-.. code-block:: yaml
-
-  filename: docs/conf.py
-  replacements:
-    - default
-    - search: vfull
-      replace: major_minor_p
-    - search: major_minor_block
-      replace_raw: "{{ next_major }}"
 
 
 Predefined Template Context

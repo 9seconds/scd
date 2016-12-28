@@ -5,38 +5,19 @@ version:
 search_patterns:
   setuppy: "(?<=version=\\\"){{ git_pep440 }}"
 
-# Available replacements:
-#   - major
-#   - minor
-#   - patch
-#   - next_major
-#   - next_minor
-#   - next_patch
-#   - dev
-#   - next_dev
-#   - post
-#   - next_post
-#   - pre
-#   - next_pre
-# replacement_patterns:
-#   full: "{{ major }}.{{ minor }}.{{ patch }}1"
-
-# defaults:
-#   search: basic
-#   replacement: full
+defaults:
+  search: pep440
+  replacement: full
 
 files:
-  - filename: setup.py
-    replacements:
-      - search: setuppy
-        replace: full
-  - filename: docs/source/conf.py
-    replacements:
-      - search_raw: "^version\\s=\\s'{{ pep440 }}'"
-        replace_raw: "{{ major }}.{{ minor }}"
-      - search_raw: "^release\\s=\\s'{{ pep440 }}'"
-        replace_raw: "{{ major }}.{{ minor }}.{{ patch }}"
-  - filename: scd/__init__.py
-    replacements:
-      - search_raw: '^__version__\s=\s"{{ pep440 }}"'
-        replace_raw: "{{ major }}.{{ minor }}.{{ patch }}{% if post %}.post{{ post }}{% endif %}{% if dev %}.dev{{ dev }}{% endif %}"
+  setup.py:
+    - search: setuppy
+      replace: full
+  docs/source/conf.py:
+    - search_raw: "^version\\s=\\s'{{ pep440 }}'"
+      replace_raw: "{{ major }}.{{ minor }}"
+    - search_raw: "^release\\s=\\s'{{ pep440 }}'"
+      replace_raw: "{{ major }}.{{ minor }}.{{ patch }}"
+  scd/__init__.py:
+    - search_raw: '^__version__\s=\s"{{ pep440 }}"'
+      replace_raw: "{{ major }}.{{ minor }}.{{ patch }}{% if post %}.post{{ post }}{% endif %}{% if dev %}.dev{{ dev }}{% endif %}"
