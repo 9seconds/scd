@@ -86,7 +86,7 @@ class File(Hashable):
 
     @property
     def filename(self):
-        return self.data["filename"]
+        return os.path.join(*self.data["filename"].split("/"))
 
     @property
     def path(self):
