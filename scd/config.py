@@ -164,7 +164,11 @@ class Config(Hashable):
 
     @property
     def project_directory(self):
-        """Absolute path to the directory with config file."""
+        """Absolute path to the directory with config file.
+
+        :return: Absolute path to the directory.
+        :rtype: str
+        """
         return os.path.dirname(self.configpath)
 
     @property
@@ -172,6 +176,9 @@ class Config(Hashable):
         """Scheme of the versioning from config file.
 
         For example, it can be ``git_pep440``.
+
+        :return: Version scheme
+        :rtype: str
         """
         return self.raw["version"].get("scheme", "semver")
 
@@ -181,20 +188,28 @@ class Config(Hashable):
         """Instance of :py:class:`scd.version.Version`.
 
         This instance is created based on data from config file.
+
+        :return: Version
+        :rtype: :py:class:`scd.version.Version`
         """
         plugins = scd.utils.get_version_plugins()
         return plugins[self.version_scheme](self)
 
     @property
     def version_number(self):
-        """Base version number from config file."""
+        """Base version number from config file.
+
+        :return: Literal number from config
+        :rtype: str
+        """
         return six.text_type(self.raw["version"]["number"])
 
     @property
     def files(self):
         """A list of files defines in config file.
 
-        Each file is an instance of :py:class:`scd.files.File`.
+        :return: List of file instances
+        :rtype: list[:py:class:`scd.files.File`]
         """
         return [
             scd.files.File(name, conf, self)
@@ -205,7 +220,8 @@ class Config(Hashable):
     def replacement_patterns(self):
         """A mapping of replacement patterns (name/repl) from config file.
 
-        This is not parsed, raw mapping, as is.
+        :return: Raw mapping, as is.
+        :rtype: dict[str, str]
         """
         return self.raw.get("replacement_patterns", {})
 
@@ -213,7 +229,8 @@ class Config(Hashable):
     def search_patterns(self):
         """A mapping of search patterns (name/pattern) from config file.
 
-        This is not parsed, raw mapping, as is.
+        :return: Raw mapping, as is.
+        :rtype: dict[str, str]
         """
         return self.raw.get("search_patterns", {})
 
@@ -221,7 +238,8 @@ class Config(Hashable):
     def defaults(self):
         """A mapping of default search/replace patterns from config file.
 
-        This is not parsed, raw mapping, as is.
+        :return: Raw mapping, as is.
+        :rtype: dict[str, str]
         """
         return self.raw.get("defaults", {})
 
