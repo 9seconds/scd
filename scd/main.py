@@ -186,25 +186,25 @@ if colorama:
             logging.basicConfig(
                 level=logging.DEBUG,
                 format=(
-                    colorama.Style.DIM
-                    + "%(relativeCreated)d "
-                    + colorama.Style.RESET_ALL + "["
-                    + colorama.Fore.RED + "%(levelname)-7s"
-                    + colorama.Style.RESET_ALL + "] ("
-                    + colorama.Fore.GREEN + "%(module)10s"
-                    + colorama.Style.RESET_ALL + ":"
-                    + colorama.Fore.BLUE + "%(lineno)-3d"
-                    + colorama.Style.RESET_ALL + ") %(message)s"
+                    colorama.Style.DIM +
+                    "%(relativeCreated)d " +
+                    colorama.Style.RESET_ALL + "[" +
+                    colorama.Fore.RED + "%(levelname)-7s" +
+                    colorama.Style.RESET_ALL + "] (" +
+                    colorama.Fore.GREEN + "%(module)10s" +
+                    colorama.Style.RESET_ALL + ":" +
+                    colorama.Fore.BLUE + "%(lineno)-3d" +
+                    colorama.Style.RESET_ALL + ") %(message)s"
                 )
             )
         elif OPTIONS.verbose:
             logging.basicConfig(
                 level=logging.INFO,
                 format=(
-                    colorama.Style.DIM
-                    + ">>> "
-                    + colorama.Style.RESET_ALL
-                    + "%(message)s"
+                    colorama.Style.DIM +
+                    ">>> " +
+                    colorama.Style.RESET_ALL +
+                    "%(message)s"
                 )
             )
         else:

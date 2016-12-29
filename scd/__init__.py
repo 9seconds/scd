@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-""":abbr:`scd (Something Completely Different)` is yet another
-implementation of the tools called bumpversions. There are many such
-tools available in the wild and I thoroughly looked through them. And
-decided to reinvent the wheel. You have a legit question: WHY THE BLOODY
-HELL DOES THIS WORLD NEED YET ANOTHER BUMPVERSION? Because I wanted the
-tool which works better at slightly bigger scale and I wanted the tool
-which I won't fight against immediately after adoption.
+""":abbr:`scd (Something Completely Different)`.
+
+This is yet another implementation of the tools called bumpversions.
+There are many such tools available in the wild and I thoroughly
+looked through them. And decided to reinvent the wheel. You have a
+legit question: WHY THE BLOODY HELL DOES THIS WORLD NEED YET ANOTHER
+BUMPVERSION? Because I wanted the tool which works better at slightly
+bigger scale and I wanted the tool which I won't fight against
+immediately after adoption.
 
 All bumpversion-like tools alllow you to manage versions of your
 software within a project. If you have a version number in your config

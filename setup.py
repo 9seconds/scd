@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Setuptools for scd."""
 
 
 import setuptools

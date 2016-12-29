@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""This module contains all routines, related to scd's configuration."""
 
 
 from __future__ import absolute_import
@@ -24,6 +25,12 @@ except ImportError:
 
 
 Parser = collections.namedtuple("Parser", ["name", "func"])
+"""Just a named tuple, related to configuration parsers.
+
+:param str name: human-readable name of the parser.
+:param callable func: parser of the config, which should accept UTF-8 text of
+    config as a first argument.
+"""
 
 CONFIG_SCHEMA = {
     "$schema": "http://json-schema.org/draft-04/schema",
@@ -102,15 +109,37 @@ CONFIG_SCHEMA = {
         }
     }
 }
+"""`JSON Schema <http://json-schema.org/>`_ of parsed configuration,
+valid by `Draft V4 <https://tools.ietf.org/html/draft-wright-json-schema-00>`_.
+"""
 
 
 @six.python_2_unicode_compatible
 class Config(Hashable):
+    """Wrapper over parsed configuration data.
+
+    This wrapper provides methods for internal scd's implementation.
+
+    You want to use this class to access configuration data.
+
+    :param str configpath: Path to the configuration file (can be
+        relative).
+    :param dict config: Parsed configuration.
+    :raises ValueError: if configuration is not valid to
+        :py:data:`CONFIG_SCHEMA`.
+    """
 
     __slots__ = "raw", "configpath"
 
     @staticmethod
     def validate_schema(config):
+        """Validate parsed content for compliance with :py:data:`CONFIG_SCHEMA`.
+
+        :param dict config: Parsed configuration.
+        :return: A list of errors, found during verification. If list is
+            empty, everyting is valid.
+        :rtype: list[str]
+        """
         validator = jsonschema.Draft4Validator(
             CONFIG_SCHEMA, format_checker=jsonschema.FormatChecker())
 
@@ -118,7 +147,7 @@ class Config(Hashable):
             "{0}: {1}".format("/".join(err.path), err.message)
             for err in validator.iter_errors(config)]
 
-    def __init__(self, configpath, config):
+    def __init__(self, configpath, config):  # NOQA
         errors = self.validate_schema(config)
         if errors:
             for error in errors:
@@ -135,24 +164,38 @@ class Config(Hashable):
 
     @property
     def project_directory(self):
+        """Absolute path to the directory with config file."""
         return os.path.dirname(self.configpath)
 
     @property
     def version_scheme(self):
+        """Scheme of the versioning from config file.
+
+        For example, it can be ``git_pep440``.
+        """
         return self.raw["version"].get("scheme", "semver")
 
     @property
     @scd.utils.lru_cache()
     def version(self):
+        """Instance of :py:class:`scd.version.Version`.
+
+        This instance is created based on data from config file.
+        """
         plugins = scd.utils.get_version_plugins()
         return plugins[self.version_scheme](self)
 
     @property
     def version_number(self):
+        """Base version number from config file."""
         return six.text_type(self.raw["version"]["number"])
 
     @property
     def files(self):
+        """A list of files defines in config file.
+
+        Each file is an instance of :py:class:`scd.files.File`.
+        """
         return [
             scd.files.File(name, conf, self)
             for name, conf in self.raw["files"].items()
@@ -160,14 +203,26 @@ class Config(Hashable):
 
     @property
     def replacement_patterns(self):
+        """A mapping of replacement patterns (name/repl) from config file.
+
+        This is not parsed, raw mapping, as is.
+        """
         return self.raw.get("replacement_patterns", {})
 
     @property
     def search_patterns(self):
+        """A mapping of search patterns (name/pattern) from config file.
+
+        This is not parsed, raw mapping, as is.
+        """
         return self.raw.get("search_patterns", {})
 
     @property
     def defaults(self):
+        """A mapping of default search/replace patterns from config file.
+
+        This is not parsed, raw mapping, as is.
+        """
         return self.raw.get("defaults", {})
 
     def __str__(self):
@@ -177,6 +232,11 @@ class Config(Hashable):
 
 
 def get_parsers():
+    """Function to detect locally available parsers.
+
+    :return: A list of available parsers for config files.
+    :rtype: list[:py:class:`Parser`]
+    """
     parsers = [Parser("JSON", get_json_parser())]
 
     yaml_parser = get_yaml_parser()
@@ -191,6 +251,15 @@ def get_parsers():
 
 
 def get_json_parser():
+    """Function which detects what parser should be used for parsing JSONs.
+
+    It uses following logic: if `simplejson
+    <https://simplejson.readthedocs.io/en/latest/>`_ is available, it
+    would be used, otherwise default :py:mod:`json` will work.
+
+    :return: JSON parser
+    :rtype: :py:class:`Parser`
+    """
     try:
         import simplejson
     except ImportError:
@@ -203,6 +272,15 @@ def get_json_parser():
 
 
 def get_yaml_parser():
+    """Function which detects what parser should be used for parsing YAMLs.
+
+    It uses following logic: if `PyYAML <http://pyyaml.org/>`_ is
+    available, it would be used, otherwise it will try for `ruamel.yaml
+    <https://bitbucket.org/ruamel/yaml>`_.
+
+    :return: YAML parser or ``None`` if nothing found.
+    :rtype: :py:class:`Parser` or None
+    """
     try:
         import yaml
     except ImportError:
@@ -220,6 +298,14 @@ def get_yaml_parser():
 
 
 def get_toml_parser():
+    """Function which detects what parser should be used for parsing TOMLs.
+
+    It uses following logic: if `toml <https://github.com/uiri/toml>`_ is
+    available, it would be used, otherwise ``None`` is returned.
+
+    :return: TOML parser or ``None`` if nothing found.
+    :rtype: :py:class:`Parser` or None
+    """
     try:
         import toml
     except ImportError:
@@ -230,6 +316,14 @@ def get_toml_parser():
 
 
 def parse(fileobj):
+    """Function which parses given file-like object with config data.
+
+    :param fileobj: Open file object for parsing.
+    :type fileobj: file-like object
+    :return: Parsed config
+    :rtype: :py:class:`Config`
+    :raises ValueError: if not possible to parse config in any way.
+    """
     content = fileobj.read()
     if not isinstance(content, six.string_types):
         content = content.decode("utf-8")
