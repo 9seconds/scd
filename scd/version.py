@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+"""Routines for version management.
+
+These module has :py:class:`Version` class which is a base class for
+entrypoints ``scd.version``. All entrypoints of such class should be
+subclasses of :py:class:`Version`.
+
+Currently, it ``scd.version`` has following defined entrypoints:
+
++------------+-----------------------+
+| Entrypoint | Class                 |
++============+=======================+
+| pep440     | :py:class:`PEP440`    |
++------------+-----------------------+
+| semver     | :py:class:`SemVer`    |
++------------+-----------------------+
+| git_pep440 | :py:class:`GitPEP440` |
++------------+-----------------------+
+| git_semver | :py:class:`GitSemVer` |
++------------+-----------------------+
+"""
 
 
 from __future__ import absolute_import
@@ -23,37 +43,8 @@ except ImportError:
     from collections import Hashable
 
 
-def git_distance(git_dir, matcher="v*"):
-    command = ["git", "--git-dir", git_dir,
-               "describe", "--tags", "--match", matcher]
-    try:
-        result = scd.utils.execute(command)
-    except ValueError:
-        return None
-
-    output = result["stdout"][0]
-    try:
-        distance = output.rsplit("-", 2)
-        if len(distance) == 1:
-            return 0
-        return int(distance[1])
-    except Exception as exc:
-        logging.debug("Cannot parse git result %s: %s", distance, exc)
-        return None
-
-
-def git_tag(git_dir):
-    command = ["git", "--git-dir", git_dir, "rev-parse", "--short", "HEAD"]
-
-    try:
-        result = scd.utils.execute(command)
-    except ValueError:
-        return None
-
-    return result["stdout"][0]
-
-
 class GitMixin(Hashable):
+    """Mixin to add Git flavor for :py:class:`Version` classes."""
 
     def __init__(self, *args, **kwargs):
         git_dir = os.path.join(self._config.project_directory, ".git")
@@ -76,8 +67,21 @@ class GitMixin(Hashable):
 @six.python_2_unicode_compatible
 @six.add_metaclass(abc.ABCMeta)
 class Version(Hashable):
+    """Base class for version scheme.
+
+    This class is the base of ``scd.version`` entrypoint and it's
+    main intention is correct version parsing and creating of
+    template context.
+
+    :param config: Configuration wrapper
+    :type config: :py:class:`scd.config.Config`
+    """
 
     REGEXP = re.compile(r"\d+\.\d+\.\d+")
+    """Regular exprssion which is used for parsing base number.
+
+    Each subclass has it's own regexp.
+    """
 
     def __init__(self, config):
         self.base_number = six.text_type(config.version_number)
@@ -95,42 +99,86 @@ class Version(Hashable):
 
     @property
     def base(self):
+        """Base number from config. Literally, as defined there.
+
+        :return: Version number
+        :rtype: str
+        """
         return self.base_number
 
     @property
     @abc.abstractmethod
     def full(self):
+        """Full reference version number, with a lot of details.
+
+        :return: Version number
+        :rtype: str
+        """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def context(self):
+        """Context for :py:class:`jinja2.Template`.
+
+        :return: A mapping of context variables.
+        :rtype: dict[str, str or int]
+        """
         raise NotImplementedError()
 
 
 @six.python_2_unicode_compatible
 class SemVer(Version):
+    """Implementation of semantic version numbering.
+
+    For details, please check http://semver.org/.
+    """
 
     TEXT_VERSION_REGEXP = re.compile(r"\d+(?=\D*$)")
+    """Regular expression matched latest number in the string."""
 
     REGEXP = semver._REGEX.pattern.strip()
     REGEXP = REGEXP.lstrip("^").rstrip("$").strip()
     REGEXP = re.compile(REGEXP, re.VERBOSE)
 
     @classmethod
-    def parse_text_version(cls, version):
-        if not version:
+    def parse_text_version(cls, text):
+        """Method which extracts latest number from the string.
+
+        Empty string implies 0. No number also implies 0.
+
+        :param str text: Line to search in.
+        :return: Latest number
+        :rtype: int
+        """
+        if not text:
             return 0
 
-        matcher = cls.TEXT_VERSION_REGEXP.search(version)
+        matcher = cls.TEXT_VERSION_REGEXP.search(text)
         return int(matcher.group(0)) if matcher is not None else 0
 
     @classmethod
-    def next_text_version(cls, version):
-        return 1 + cls.parse_text_version(version)
+    def next_text_version(cls, text):
+        """Method which returns next number from the string.
+
+        From string ``build10s`` it returns 11.
+
+        :param str text: Line to search in.
+        :return: Next number
+        :rtype: int
+        """
+        return 1 + cls.parse_text_version(text)
 
     @classmethod
     def prev_text_version(cls, version):
+        """Method which returns previous number from the string.
+
+        From string ``build10s`` it returns 9.
+
+        :param str text: Line to search in.
+        :return: Next number
+        :rtype: int
+        """
         return max(0, cls.parse_text_version(version) - 1)
 
     def __init__(self, config):
@@ -183,62 +231,159 @@ class SemVer(Version):
 
     @property
     def next_major(self):
+        """Next major version number.
+
+        Next major number of version ``1.2.3`` is 2.
+
+        :return: Next major version number.
+        :rtype: int
+        """
         return 1 + self.major
 
     @property
     def prev_major(self):
+        """Prev major version number.
+
+        Previous major number of version ``1.2.3`` is 0.
+
+        :return: Previous major version number.
+        :rtype: int
+        """
         return max(0, self.major - 1)
 
     @property
     def next_minor(self):
+        """Next minor version number.
+
+        Next minor number of version ``1.2.3`` is 3.
+
+        :return: Next minor version number.
+        :rtype: int
+        """
         return 1 + self.minor
 
     @property
     def prev_minor(self):
+        """Prev minor version number.
+
+        Previous minor number of version ``1.2.3`` is 1.
+
+        :return: Previous minor version number.
+        :rtype: int
+        """
         return max(0, self.minor - 1)
 
     @property
     def next_patch(self):
+        """Next patch version number.
+
+        Next patch number of version ``1.2.3`` is 4.
+
+        :return: Next patch version number.
+        :rtype: int
+        """
         return 1 + self.patch
 
     @property
     def prev_patch(self):
+        """Prev patch version number.
+
+        Previous patch number of version ``1.2.3`` is 4.
+
+        :return: Previous patch version number.
+        :rtype: int
+        """
         return max(0, self.patch - 1)
 
     @property
     def prerelease(self):
+        """Prerelase version number.
+
+        Prerelase version number of version ``1.2.3-pre1+build4`` is pre1.
+
+        :return: Prerelase version number.
+        :rtype: str
+        """
         return self.parsed.prerelease or ""
 
     @property
     def next_prerelease(self):
+        """Next prerelase version number.
+
+        Next prerelase version number of version ``1.2.3-pre1+build4``
+        is pre2.
+
+        :return: Next prerelase version number.
+        :rtype: str
+        """
         return self.TEXT_VERSION_REGEXP.sub(
             lambda m: six.text_type(self.next_text_version(m.group(0))),
             self.prerelease)
 
     @property
     def prev_prerelease(self):
+        """Prev prerelase version number.
+
+        Previous prerelase version number of version
+        ``1.2.3-pre1+build4`` is pre0.
+
+        :return: Previous prerelase version number.
+        :rtype: str
+        """
         return self.TEXT_VERSION_REGEXP.sub(
             lambda m: six.text_type(self.prev_text_version(m.group(0))),
             self.prerelease)
 
     @property
     def build(self):
+        """Build version number.
+
+        Build version number of version ``1.2.3-pre1+build4`` is build4.
+
+        :return: Build version number.
+        :rtype: str
+        """
         return self.parsed.build or ""
 
     @property
     def next_build(self):
+        """Next build version number.
+
+        Next build version number of version ``1.2.3-pre1+build4`` is
+        build5.
+
+        :return: Next build version number.
+        :rtype: str
+        """
         return self.TEXT_VERSION_REGEXP.sub(
             lambda m: six.text_type(self.next_text_version(m.group(0))),
             self.build)
 
     @property
     def prev_build(self):
+        """Prev build version number.
+
+        Previous build version number of version ``1.2.3-pre1+build4``
+        is build3.
+
+        :return: Previous build version number.
+        :rtype: str
+        """
         return self.TEXT_VERSION_REGEXP.sub(
             lambda m: six.text_type(self.prev_text_version(m.group(0))),
             self.build)
 
 
 class GitSemVer(GitMixin, SemVer):
+    """Git flavored :py:class:`SemVer` implementation.
+
+    This implementation does the same, but precalculates build and
+    prerelase parts based on Git information.
+
+    Prerelase is the number of commits since latest tag and build is
+    short commit hash. Previous and next builds are always empty.
+    Because nobody predicts next commit hash.
+    """
 
     def __init__(self, config):
         SemVer.__init__(self, config)
@@ -264,6 +409,10 @@ class GitSemVer(GitMixin, SemVer):
 
 @six.python_2_unicode_compatible
 class PEP440(Version):
+    """Implementation of Python versioning.
+
+    For details, please check :pep:`440`.
+    """
 
     REGEXP = packaging.version.VERSION_PATTERN.strip()
     REGEXP = re.compile(REGEXP, re.VERBOSE | re.IGNORECASE)
@@ -455,3 +604,48 @@ class GitPEP440(GitMixin, PEP440):
             return ".".join(local)
 
         return super(GitPEP440, self).local
+
+
+def git_distance(git_dir, matcher="v*"):
+    """Return a number of commits since latest matched tag.
+
+    :param str git_dir: Path to the :file:`.git` directory of
+        repository.
+    :param str matcher: Glob of the tag names to operate with.
+    :return: The number of commits or ``None`` if nothing is found.
+    :rtype: int or None
+    """
+    command = ["git", "--git-dir", git_dir,
+               "describe", "--tags", "--match", matcher]
+    try:
+        result = scd.utils.execute(command)
+    except ValueError:
+        return None
+
+    output = result["stdout"][0]
+    try:
+        distance = output.rsplit("-", 2)
+        if len(distance) == 1:
+            return 0
+        return int(distance[1])
+    except Exception as exc:
+        logging.debug("Cannot parse git result %s: %s", distance, exc)
+        return None
+
+
+def git_tag(git_dir):
+    """Return a current Git commit sha for repository.
+
+    :param str git_dir: Path to the :file:`.git` directory of
+        repository.
+    :return: Commit SHA in short form or ``None`` if cannot find any.
+    :rtype: str or None
+    """
+    command = ["git", "--git-dir", git_dir, "rev-parse", "--short", "HEAD"]
+
+    try:
+        result = scd.utils.execute(command)
+    except ValueError:
+        return None
+
+    return result["stdout"][0]
