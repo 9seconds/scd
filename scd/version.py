@@ -102,6 +102,11 @@ class Version(Hashable):
     def full(self):
         raise NotImplementedError()
 
+    @property
+    @abc.abstractmethod
+    def context(self):
+        raise NotImplementedError()
+
 
 @six.python_2_unicode_compatible
 class SemVer(Version):
