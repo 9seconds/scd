@@ -73,6 +73,8 @@ Software is distributed using `MIT license
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
 
+You can find source codes on GitHub: https://github.com/9seconds/scd.
+
 
 Contents
 ++++++++

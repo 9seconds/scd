@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Module, which has routines for scd CLI."""
 
 
 from __future__ import absolute_import
@@ -40,6 +41,12 @@ OPTIONS = None
 
 
 def catch_exceptions(func):
+    """Decorator which makes function more CLI friendly.
+
+    If everything is ok, it returns :py:data:`os.EX_OK` (code 0), if not
+    - :py:data:`os.EX_SOFTWARE` (code 70). Also, it is smart enough to
+    differ verbose and debug mode and print accordingly.
+    """
     @six.wraps(func)
     def decorator():
         try:
@@ -50,9 +57,11 @@ def catch_exceptions(func):
                     logging.exception(exc)
                 elif OPTIONS.verbose:
                     logging.error(exc)
-                else:
+                elif colorama is not None:
                     print(colorama.Fore.RED + six.text_type(exc),
                           file=sys.stderr)
+                else:
+                    print(six.text_type(exc), file=sys.stderr)
             return os.EX_SOFTWARE
 
         return os.EX_OK
@@ -62,6 +71,11 @@ def catch_exceptions(func):
 
 @catch_exceptions
 def main():
+    """Main function.
+
+    Basically, it parses CLI, creates config, traverse files and does
+    modifications. All that scd does is happening with this function.
+    """
     global OPTIONS
 
     OPTIONS = get_options()
@@ -84,6 +98,11 @@ def main():
 
 
 def get_options():
+    """Return parsed commandline arguments.
+
+    :return: Parsed commandline arguments
+    :rtype: :py:class:`argparse.Namespace`
+    """
     parser = argparse.ArgumentParser(
         description=DESCRIPTION,
         epilog=EPILOG)
@@ -121,6 +140,18 @@ def get_options():
 
 
 def filter_files(all_files, required):
+    """Function which takes files, defined in config and limits them by CLI.
+
+    If ``required`` parameters is empty, then ``all_files`` will be
+    returned.
+
+    :param all_files: Files, taken from config.
+    :type all_files: list[:py:class:`scd.files.File`]
+    :param list[str] required: A list of files, defined in CLI (may be
+        relative).
+    :return: A list of files which actually required to be processed
+    :rtype: list[:py:class:`scd.files.File`]
+    """
     if not required:
         return all_files
 
@@ -129,6 +160,13 @@ def filter_files(all_files, required):
 
 
 def process_file(fileobj, config):
+    """Function, which is responsible for processing of file.
+
+    :param fileobj: File to process.
+    :type fileobj: :py:class:`scd.files.File`
+    :param config: Parsed configuration.
+    :type config: :py:class:`scd.config.Config`
+    """
     need_to_save = False
     file_result = []
 
@@ -139,7 +177,8 @@ def process_file(fileobj, config):
                 line = sr.process(config.version, line)
                 if original_line != line:
                     need_to_save = True
-                file_result.append(line)
+                if not OPTIONS.dry_run:
+                    file_result.append(line)
 
     if not OPTIONS.dry_run and need_to_save:
         logging.debug("Need to save %s", fileobj.path)
@@ -150,6 +189,12 @@ def process_file(fileobj, config):
 
 
 def guess_configfile():
+    """Return file-like object, guessing where the hell if config file.
+
+    :return: Open config.
+    :rtype: file-like object
+    :raises ValueError: if cannot find config file.
+    """
     if OPTIONS.config:
         return open(OPTIONS.config, "rt")
 
@@ -166,6 +211,13 @@ def guess_configfile():
 
 
 def search_config_in_directory(directory):
+    """Return config file name if it is found in directory.
+
+    :param str directory: Path to the directory where to search config files.
+    :return: Path to the config file (absolute) or ``None`` if nothing is
+        found
+    :rtype: str or None
+    """
     logging.debug("Search configfile in %s", directory)
 
     names = [".scd.json", "scd.json", ".scd.yaml", "scd.yaml", ".scd.toml",
@@ -182,6 +234,7 @@ def search_config_in_directory(directory):
 
 if colorama:
     def configure_logging():
+        """Configure logging based on :py:data:`OPTIONS`."""
         if OPTIONS.debug:
             logging.basicConfig(
                 level=logging.DEBUG,
@@ -211,6 +264,7 @@ if colorama:
             logging.basicConfig(level=logging.ERROR, format="%(message)s")
 else:
     def configure_logging():
+        """Configure logging based on :py:data:`OPTIONS`."""
         if OPTIONS.debug:
             logging.basicConfig(
                 level=logging.DEBUG,
