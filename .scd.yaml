@@ -10,8 +10,8 @@ defaults:
   replacement: full
 
 groups:
-  code: "scd/**.py"
-  docs: "docs/**"
+  code: 'scd/.*?\.py'
+  docs: "docs/.*?"
 
 files:
   setup.py:

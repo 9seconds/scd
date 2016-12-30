@@ -7,10 +7,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
-import fnmatch
 import json
 import logging
 import os.path
+import re
 
 import jsonschema
 import six
@@ -36,7 +36,7 @@ Parser = collections.namedtuple("Parser", ["name", "func"])
 CONFIG_SCHEMA = {
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
-    "required": ["version", "files"],
+    "required": ["version", "defaults", "files"],
     "properties": {
         "version": {
             "type": "object",
@@ -279,14 +279,14 @@ class Config(Hashable):
         required_files = {os.path.abspath(item) for item in required_files}
         if required_groups:
             required_groups = [
-                os.path.join(self.project_directory, value)
+                os.path.join(self.project_directory, value + "$")
                 for key, value in self.groups.items()
                 if key in required_groups]
 
         def filterfunc(item):
             if required_groups:
                 for glob in required_groups:
-                    if fnmatch.fnmatch(item.path, glob):
+                    if re.match(glob, item.path):
                         break
                 else:
                     return False

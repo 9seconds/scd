@@ -99,7 +99,7 @@ the same datastructure. If you are familiar with `JSON Schema
   {
       "$schema": "http://json-schema.org/draft-04/schema",
       "type": "object",
-      "required": ["version", "files"],
+      "required": ["version", "defaults", "files"],
       "properties": {
           "version": {
               "type": "object",
@@ -107,7 +107,7 @@ the same datastructure. If you are familiar with `JSON Schema
               "properties": {
                   "scheme": {
                       "type": "string",
-                      "enum": ["pep440", "git_pep440", "semver", "git_semver"]
+                      "enum": ["pep440", "semver", "git_pep440", "git_semver"]
                   },
                   "number": {
                       "oneOf": [
@@ -163,6 +163,10 @@ the same datastructure. If you are familiar with `JSON Schema
               "type": "object",
               "additionalProperties": {"type": "string"}
           },
+          "groups": {
+              "type": "object",
+              "additionalProperties": {"type": "string"}
+          },
           "defaults": {
               "type": "object",
               "properties": {
@@ -173,6 +177,7 @@ the same datastructure. If you are familiar with `JSON Schema
           }
       }
   }
+
 
 Please be noticed that it is possible to extend allowed schemes with
 external entrypoints but :pep:`440` and `SemVer <http://semver.org/>`_
@@ -209,6 +214,10 @@ Full Example
    defaults:
      search: full
      replace: full
+
+   groups:
+     code: 'scd/.*?\.py'
+     docs: 'docs/.*?'
 
    files:
      setup.py:
@@ -373,6 +382,24 @@ There are 2 predefined replacement patterns:
 +------+------------+-----------------------------------------------------------+
 
 Of course, it is possible to override them in that section.
+
+
+``groups``
+----------
+
+Sometimes you want to change versions only in some subset of files.
+This why you can group them in some optional groups and filter by these
+groups. So, let's say you've defined groups *code* and *docs*. In that
+case, you can modify versions in docs only, without touching the code.
+
+This is a mapping parameter. Key is the group name, value is regular
+expression. Each expression sets a path (or pathes) relative to the
+position of config file. The same story, as in `files`_.
+
+.. important::
+
+    scd will implicitly append ``$`` to the pattern. Please do not use
+    ``^`` and ``$`` as start/end of the line - it just makes no sense.
 
 
 ``defaults``
