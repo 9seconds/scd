@@ -12,6 +12,7 @@ import os
 import os.path
 import sys
 
+import pkg_resources
 import six
 
 import scd.config
@@ -82,6 +83,11 @@ def main():
     configure_logging()
     logging.debug("Options: %s", OPTIONS)
 
+    if OPTIONS.own_version:
+        dist = pkg_resources.get_distribution("scd")
+        print(dist.version)
+        return
+
     config = scd.config.parse(guess_configfile())
     logging.info("Version is %s", config.version.full)
 
@@ -127,6 +133,16 @@ def get_options():
         metavar="CONFIG_PATH",
         default=None,
         help="Path to the config. By default autodiscovery will be performed.")
+    parser.add_argument(
+        "-V", "--own-version",
+        default=False,
+        action="store_true",
+        help="print version only.")
+    parser.add_argument(
+        "-p", "--replace-version",
+        default=False,
+        action="store_true",
+        help="print version to replace to.")
     parser.add_argument(
         "files",
         metavar="FILE_PATH",
