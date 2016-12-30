@@ -473,6 +473,21 @@ class PEP440(Version):
 
     @property
     def maximum(self):
+        """Maximal representation of the version.
+
+        This always has all possible parts (probably except of
+        prerelase, it is still optional, because we have to know
+        context to calculate that) even if it makes no sense. I have no
+        idea about usecase of that except of having this property for
+        completenes.
+
+        Example: ``0!1.2.3rc3.post0.dev0+1ubuntu1``.
+
+        Horrible.
+
+        :return: Maximal version number.
+        :rtype: str
+        """
         constructed = "{0.epoch}!{0.major}.{0.minor}.{0.patch}".format(self)
         if self.prerelease:
             constructed += "{0.prerelease_type}{0.prerelease}".format(self)
@@ -494,10 +509,26 @@ class PEP440(Version):
 
     @property
     def epoch(self):
+        """Epoch part of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 1483072998.
+
+        :return: Epoch part of the version number
+        :rtype: int
+        """
         return self.parsed.epoch
 
     @property
     def major(self):
+        """Major part of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 1.
+
+        :return: Major part of the version number
+        :rtype: int
+        """
         try:
             return self.parsed.release[0]
         except IndexError:
@@ -505,14 +536,38 @@ class PEP440(Version):
 
     @property
     def next_major(self):
+        """Next major number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Next major part of the version number
+        :rtype: int
+        """
         return 1 + self.major
 
     @property
     def prev_major(self):
+        """Prev major number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 0.
+
+        :return: Previous major part of the version number
+        :rtype: int
+        """
         return max(0, self.major - 1)
 
     @property
     def minor(self):
+        """Minor number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Minor part of the version number
+        :rtype: int
+        """
         try:
             return self.parsed.release[1]
         except IndexError:
@@ -520,14 +575,38 @@ class PEP440(Version):
 
     @property
     def next_minor(self):
+        """Next minor number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 3.
+
+        :return: Next minor part of the version number
+        :rtype: int
+        """
         return 1 + self.minor
 
     @property
     def prev_minor(self):
+        """Prev minor number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 1.
+
+        :return: Previous minor part of the version number
+        :rtype: int
+        """
         return max(0, self.minor - 1)
 
     @property
     def patch(self):
+        """Patch number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 3.
+
+        :return: Patch part of the version number
+        :rtype: int
+        """
         try:
             return self.parsed.release[2]
         except IndexError:
@@ -535,58 +614,170 @@ class PEP440(Version):
 
     @property
     def next_patch(self):
+        """Next patch number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 4.
+
+        :return: Next patch part of the version number
+        :rtype: int
+        """
         return 1 + self.patch
 
     @property
     def prev_patch(self):
+        """Prev patch number for the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Previous patch part of the version number
+        :rtype: int
+        """
         return max(0, self.patch - 1)
 
     @property
-    def prerelease(self):
-        return self.parsed.pre[-1] if self.parsed.pre else 0
-
-    @property
     def prerelease_type(self):
+        """Type of the prerelase
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns rc.
+
+        :return: Type of the prerelease
+        :rtype: str
+        """
         return self.parsed.pre[0] if self.parsed.pre else ""
 
     @property
+    def prerelease(self):
+        """Prerelease number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 3.
+
+        :return: Prerelease part of the version number
+        :rtype: int
+        """
+        return self.parsed.pre[-1] if self.parsed.pre else 0
+
+    @property
     def next_prerelease(self):
+        """Next prerelease number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 4.
+
+        :return: Next prerelease part of the version number
+        :rtype: int
+        """
         return 1 + self.prerelease
 
     @property
     def prev_prerelease(self):
+        """Prev prerelease number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Previous prerelease part of the version number
+        :rtype: int
+        """
         return max(0, self.prerelease - 1)
 
     @property
     def dev(self):
+        """Dev number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Development part of the version number
+        :rtype: int
+        """
         return self.parsed.dev[-1] if self.parsed.dev else 0
 
     @property
     def next_dev(self):
+        """Next dev number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 3.
+
+        :return: Next development part of the version number
+        :rtype: int
+        """
         return 1 + self.dev
 
     @property
     def prev_dev(self):
+        """Prev dev number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 2.
+
+        :return: Previous development part of the version number
+        :rtype: int
+        """
         return max(0, self.dev - 1)
 
     @property
     def post(self):
+        """Post number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 13.
+
+        :return: Post part of the version number
+        :rtype: int
+        """
         return self.parsed.post[-1] if self.parsed.post else 0
 
     @property
     def next_post(self):
+        """Next post number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 14.
+
+        :return: Next post part of the version number
+        :rtype: int
+        """
         return 1 + self.post
 
     @property
     def prev_post(self):
+        """Prev post number of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 12.
+
+        :return: Previous post part of the version number
+        :rtype: int
+        """
         return max(0, self.post - 1)
 
     @property
     def local(self):
+        """Local part of the version.
+
+        For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
+        returns 5afe90c.linux.
+
+        :return: Local part of the version number
+        :rtype: int
+        """
         return ".".join(self.parsed.local or [])
 
 
 class GitPEP440(GitMixin, PEP440):
+    """Git flavored :py:class:`PEP440` implementation.
+
+    This implementation does the same, but precalculates local and dev
+    parts based on Git information.
+
+    Dev release is the number of commits since latest tag and local will
+    have Git short commit SHA at the first place.
+    """
 
     def __init__(self, config):
         PEP440.__init__(self, config)

@@ -52,8 +52,8 @@ else:
     colorama.init(autoreset=True)
 
 
-version = "0.1.0"
-version = version.split(".")
+__version__ = "0.1.0"
+__version__ = __version__.split(".")
 """Identifier of the current version.
 
 Basically, this is a tuple like :py:data:`sys.version_info`, but not
