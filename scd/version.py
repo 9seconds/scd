@@ -200,7 +200,7 @@ class SemVer(Version):
 
     @property
     def context(self):
-        return {
+        to_return = {
             "full": self.full,
             "base": self.base,
             "major": self.major,
@@ -218,6 +218,9 @@ class SemVer(Version):
             "build": self.build,
             "next_build": self.next_build,
             "prev_build": self.prev_build}
+        to_return.update(self._config.extra_context)
+
+        return to_return
 
     @property
     def full(self):
@@ -426,7 +429,7 @@ class PEP440(Version):
 
     @property
     def context(self):
-        return {
+        to_return = {
             "full": self.full,
             "base": self.base,
             "epoch": self.epoch,
@@ -451,6 +454,9 @@ class PEP440(Version):
             "post": self.post,
             "next_post": self.next_post,
             "prev_post": self.prev_post}
+        to_return.update(self._config.extra_context)
+
+        return to_return
 
     @property
     def full(self):

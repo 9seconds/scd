@@ -191,7 +191,7 @@ class File(Hashable):
         :rtype: dict[str, str]
         """
         return {
-            name: make_pattern("{{ %s }}" % name)
+            name: make_pattern("{{ %s }}" % name, self.config)
             for name in scd.utils.get_version_plugins()
         }
 
@@ -210,7 +210,7 @@ class File(Hashable):
         """
         patterns = self.default_search_patterns.copy()
         patterns.update(
-            (k, make_pattern(v))
+            (k, make_pattern(v, self.config))
             for k, v in self.config.search_patterns.items())
 
         return patterns
@@ -250,7 +250,7 @@ class File(Hashable):
                 continue
 
             if "search_raw" in item:
-                search_pattern = make_pattern(item["search_raw"])
+                search_pattern = make_pattern(item["search_raw"], self.config)
             elif "search" in item:
                 search_pattern = self.all_search_patterns[item["search"]]
             else:
@@ -280,7 +280,7 @@ def make_template(template):
 
 
 @scd.utils.lru_cache()
-def make_pattern(base_pattern):
+def make_pattern(base_pattern, config):
     """Function, which creates regular expression based on given pattern.
 
     Also, it injects all predefined search regexps like ``pep440`` etc.
@@ -291,7 +291,7 @@ def make_pattern(base_pattern):
     :rtype: regexp
     :raises ValueError: if pattern cannot be parsed.
     """
-    patterns = {}
+    patterns = config.extra_context.copy()
     for name, data in scd.utils.get_version_plugins().items():
         if not hasattr(data, "REGEXP"):
             logging.warning("Plugin %s has no regexp, skip.")

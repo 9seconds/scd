@@ -27,13 +27,13 @@ def minimal_config():
         },
         "files": {}
     }
-    return scd.config.Config(pytest.faux.gen_alpha(), config)
+    return scd.config.Config(pytest.faux.gen_alpha(), config, {})
 
 
 @pytest.fixture
 def full_config(config, tmp_project):
     config_file = tmp_project.join("config.json").strpath
-    return scd.config.Config(config_file, config)
+    return scd.config.Config(config_file, config, {"k": "v"})
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def firstfile(full_config):
 class TestSearchReplace(object):
 
     def test_replace_nothing(self, minimal_config):
-        search_pattern = scd.files.make_pattern(r"\W+")
+        search_pattern = scd.files.make_pattern(r"\W+", minimal_config)
         replacement = scd.files.make_template("{{ major }}")
         sr = scd.files.SearchReplace(search_pattern, replacement)
 
@@ -65,7 +65,7 @@ class TestSearchReplace(object):
          ".{{ patch }}{% endif %}", "1.2"),
     ))
     def test_replace(self, minimal_config, repl, result):
-        search_pattern = scd.files.make_pattern(r"\w+")
+        search_pattern = scd.files.make_pattern(r"\w+", minimal_config)
         replacement = scd.files.make_template(repl)
         sr = scd.files.SearchReplace(search_pattern, replacement)
 
@@ -95,23 +95,24 @@ class TestFile(object):
             "vreplace": scd.files.make_template("v{{ full }}")
         }
 
-    def test_default_search_patterns(self, firstfile):
+    def test_default_search_patterns(self, full_config, firstfile):
         assert firstfile.default_search_patterns == {
-            name: scd.files.make_pattern("{{ %s }}" % name)
+            name: scd.files.make_pattern("{{ %s }}" % name, full_config)
             for name in scd.utils.get_version_plugins()
         }
 
-    def test_all_search_patterns(self, scheme, firstfile):
+    def test_all_search_patterns(self, scheme, full_config, firstfile):
         assert firstfile.all_search_patterns == dict(list({
-            "full": scd.files.make_pattern("{{ %s }}" % scheme),
+            "full": scd.files.make_pattern("{{ %s }}" % scheme, full_config),
             "full_version_w_comment": scd.files.make_pattern(
-                "{{ %s }}(?=.*?\#\sFULL)" % scheme),
-            "vsearch": scd.files.make_pattern("v{{ %s }}" % scheme)
+                "{{ %s }}(?=.*?\#\sFULL)" % scheme, full_config),
+            "vsearch": scd.files.make_pattern("v{{ %s }}" % scheme,
+                                              full_config)
         }.items()) + list(firstfile.default_search_patterns.items()))
 
-    def test_default_search_pattern(self, scheme, firstfile):
+    def test_default_search_pattern(self, scheme, full_config, firstfile):
         assert firstfile.default_search_pattern == scd.files.make_pattern(
-            "{{ %s }}" % scheme)
+            "{{ %s }}" % scheme, full_config)
 
     def test_default_replacement_pattern(self, firstfile):
         assert firstfile.default_replace_pattern == scd.files.make_template(

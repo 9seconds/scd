@@ -125,15 +125,17 @@ class Config(Hashable):
     :param str configpath: Path to the configuration file (can be
         relative).
     :param dict config: Parsed configuration.
+    :param dict[str, str] extra_context: Additional context to use
+        in templates.
     :raises ValueError: if configuration is not valid to
         :py:data:`CONFIG_SCHEMA`.
     """
 
-    __slots__ = "raw", "configpath"
+    __slots__ = "raw", "configpath", "extra_context"
 
     @staticmethod
     def validate_schema(config):
-        """Validate parsed content for compliance with :py:data:`CONFIG_SCHEMA`.
+        """Validate parsed content to comply with :py:data:`CONFIG_SCHEMA`.
 
         :param dict config: Parsed configuration.
         :return: A list of errors, found during verification. If list is
@@ -147,7 +149,7 @@ class Config(Hashable):
             "{0}: {1}".format("/".join(err.path), err.message)
             for err in validator.iter_errors(config)]
 
-    def __init__(self, configpath, config):  # NOQA
+    def __init__(self, configpath, config, extra_context):
         errors = self.validate_schema(config)
         if errors:
             for error in errors:
@@ -158,6 +160,7 @@ class Config(Hashable):
 
         self.raw = config
         self.configpath = os.path.abspath(configpath)
+        self.extra_context = extra_context
 
     def __hash__(self):
         return hash(self.configpath)
@@ -334,11 +337,13 @@ def get_toml_parser():
         return toml.loads
 
 
-def parse(fileobj):
+def parse(fileobj, extra_context):
     """Function which parses given file-like object with config data.
 
     :param fileobj: Open file object for parsing.
     :type fileobj: file-like object
+    :param dict[str, str] extra_context: Additional context to use
+        in templates.
     :return: Parsed config
     :rtype: :py:class:`Config`
     :raises ValueError: if not possible to parse config in any way.
@@ -356,6 +361,6 @@ def parse(fileobj):
         except Exception as exc:
             logging.debug("Cannot parse %s: %s", parser.name, exc)
         else:
-            return Config(fileobj.name, parsed)
+            return Config(fileobj.name, parsed, extra_context)
 
     raise ValueError("Cannot parse {0}".format(fileobj.name))

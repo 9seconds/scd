@@ -60,7 +60,8 @@ class VersionTest(object):
             },
             "files": {}
         }
-        self.config = scd.config.Config(pytest.faux.gen_alpha(), config)
+        self.config = scd.config.Config(pytest.faux.gen_alpha(), config,
+                                        {"k": "v"})
 
 
 class TestSemVer(VersionTest):
@@ -112,7 +113,8 @@ class TestSemVer(VersionTest):
             "prev_prerelease": "pre0",
             "build": "0",
             "next_build": "1",
-            "prev_build": "0"
+            "prev_build": "0",
+            "k": "v"
         }
 
     @pytest.mark.parametrize("pre", ("-1", ""))
@@ -204,7 +206,8 @@ class TestGitSemver(VersionTest):
             "prev_prerelease": version.prev_prerelease,
             "build": tag_name,
             "next_build": "",
-            "prev_build": ""
+            "prev_build": "",
+            "k": "v"
         }
 
     def test_empty_distance(self, git_dir, git_distance, git_tag):
@@ -279,7 +282,8 @@ class TestPEP440(VersionTest):
             "post": version.post,
             "prev_post": version.prev_post,
             "next_post": version.next_post,
-            "local": version.local
+            "local": version.local,
+            "k": "v"
         }
 
     def test_no_epoch(self):

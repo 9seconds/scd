@@ -6,7 +6,9 @@ CLI Arguments and Options
 
 ::
 
-   usage: scd [-h] [-d | -v] [-n] [-c CONFIG_PATH] [FILE_PATH [FILE_PATH ...]]
+   usage: scd [-h] [-V] [-p] [-n] [-c CONFIG_PATH]
+              [-x [CONTEXT_VAR [CONTEXT_VAR ...]]] [-d | -v]
+              [FILE_PATH [FILE_PATH ...]]
 
    scd is a tool to manage version strings within your project files.
 
@@ -16,15 +18,17 @@ CLI Arguments and Options
 
    optional arguments:
      -h, --help            show this help message and exit
-     -d, --debug           run in debug mode
-     -v, --verbose         run tool in verbose mode
+     -V, --own-version     print version only.
+     -p, --replace-version
+                           print version to replace to.
      -n, --dry-run         make dry run, do not change anything.
      -c CONFIG_PATH, --config CONFIG_PATH
-                           Path to the config. By default autodiscovery will be
+                           path to the config. By default autodiscovery will be
                            performed.
-
-   Please check GH of the SCD for issues and updates:
-   https://github.com/9seconds/scd
+     -x [CONTEXT_VAR [CONTEXT_VAR ...]], --extra-context [CONTEXT_VAR [CONTEXT_VAR ...]]
+                           Additional context variables. Format is key=value.
+     -d, --debug           run in debug mode
+     -v, --verbose         run tool in verbose mode
 
 I have no idea what to add here. You can get this output with ``scd -h``.
 
@@ -161,3 +165,13 @@ your repository and execuing scd without explicit config path
 #. If nothing is found, scd will get top level of your repository (``git
    rev-parse --show-toplevel``) and start to search there. The same file
    order.
+
+
+Extra Context
+-------------
+
+Sometimes you need to have some extra context to propagate
+into templates or patterns. Here is the flag for that, ``-x``
+(``--extra-context``). If you execute scd like ``scd -x name=myname``,
+you will get ``name`` variable for replacement and search patterns
+immediately.

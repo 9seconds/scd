@@ -88,7 +88,9 @@ def main():
         print(dist.version)
         return
 
-    config = scd.config.parse(guess_configfile())
+    config = scd.config.parse(
+        guess_configfile(),
+        dict(OPTIONS.extra_context))
     logging.info("Version is %s", config.version.full)
 
     if OPTIONS.replace_version:
@@ -136,7 +138,14 @@ def get_options():
         "-c", "--config",
         metavar="CONFIG_PATH",
         default=None,
-        help="Path to the config. By default autodiscovery will be performed.")
+        help="path to the config. By default autodiscovery will be performed.")
+    parser.add_argument(
+        "-x", "--extra-context",
+        metavar="CONTEXT_VAR",
+        default=[],
+        nargs=argparse.ZERO_OR_MORE,
+        type=argparse_extra_context_var,
+        help="Additional context variables. Format is key=value.")
 
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument(
@@ -159,6 +168,13 @@ def get_options():
             "If nothing is set, all filenames in config will be used."))
 
     return parser.parse_args()
+
+
+def argparse_extra_context_var(arg):
+    if "=" not in arg:
+        raise argparse.ArgumentTypeError(
+            "context var definition should be in form key=value.")
+    return arg.split("=", 1)
 
 
 def filter_files(all_files, required):
