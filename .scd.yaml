@@ -14,10 +14,10 @@ files:
     - search: setuppy
       replace: full
   docs/source/conf.py:
-    - search_raw: "^version\\s=\\s'{{ pep440 }}'"
+    - search_raw: "(?<=version\\s=\\s'){{ pep440 }}"
       replace_raw: "{{ major }}.{{ minor }}"
-    - search_raw: "^release\\s=\\s'{{ pep440 }}'"
+    - search_raw: "(?<=^release\\s=\\s'){{ pep440 }}"
       replace_raw: "{{ major }}.{{ minor }}.{{ patch }}"
   scd/__init__.py:
-    - search_raw: '^__version__\s=\s"{{ pep440 }}"'
-      replace_raw: "{{ major }}.{{ minor }}.{{ patch }}{% if post %}.post{{ post }}{% endif %}{% if dev %}.dev{{ dev }}{% endif %}"
+    - search_raw: '(?<=^__version__\s=\s)"{{ pep440 }}"'
+      replace_raw: "\"{{ major }}.{{ minor }}.{{ patch }}{% if post %}.post{{ post }}{% endif %}{% if dev %}.dev{{ dev }}{% endif %}\""
