@@ -211,10 +211,11 @@ class Config(Hashable):
         :return: List of file instances
         :rtype: list[:py:class:`scd.files.File`]
         """
-        return [
+        files = [
             scd.files.File(name, conf, self)
             for name, conf in self.raw["files"].items()
         ]
+        return sorted(files, key=lambda item: item.path)
 
     @property
     def replacement_patterns(self):
