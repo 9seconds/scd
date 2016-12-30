@@ -175,10 +175,10 @@ def process_file(fileobj, config):
             original_line = line
             for sr in fileobj.patterns:
                 line = sr.process(config.version, line)
-                if original_line != line:
-                    need_to_save = True
-                if not OPTIONS.dry_run:
-                    file_result.append(line)
+            if original_line != line:
+                need_to_save = True
+            if not OPTIONS.dry_run:
+                file_result.append(line)
 
     if not OPTIONS.dry_run and need_to_save:
         logging.debug("Need to save %s", fileobj.path)
