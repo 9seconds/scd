@@ -1,3 +1,4 @@
+wheel
 -r test-requirements.txt
 -r doc-requirements.txt
 -e .
