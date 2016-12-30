@@ -23,7 +23,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.rst"), "rt") as rfp:
 
 setuptools.setup(
     name="scd",
-    version="0.0.1",
+    version="1.0.0",
     description="Something Completely different",
     long_description=long_description,
     author="Sergey Arkhipov",
@@ -52,14 +52,23 @@ setuptools.setup(
     },
     zip_safe=True,
     classifiers=(
-        "Intended Audience :: Information Technology",
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
-        "Operating System :: POSIX :: Linux",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6"
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Version Control",
+        "Topic :: Utilities"
     )
 )

@@ -329,7 +329,7 @@ def test_git_tag_nok(git_dir, external_command):
 
 @pytest.mark.skipIf(has_git, reason="No git is found in PATH")
 def test_git_distance_ok(git_dir):
-    assert scd.version.git_distance(git_dir)
+    scd.version.git_distance(git_dir)
 
 
 @pytest.mark.skipIf(has_git, reason="No git is found in PATH")
