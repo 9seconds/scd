@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
+import fnmatch
 import json
 import logging
 import os.path
@@ -96,6 +97,10 @@ CONFIG_SCHEMA = {
             "additionalProperties": {"type": "string"}
         },
         "replacement_paterns": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        },
+        "groups": {
             "type": "object",
             "additionalProperties": {"type": "string"}
         },
@@ -221,6 +226,15 @@ class Config(Hashable):
         return sorted(files, key=lambda item: item.path)
 
     @property
+    def groups(self):
+        """A list of groups defined in config file.
+
+        :return: List of group names
+        :rtype: list[str, str]
+        """
+        return self.raw.get("groups", {})
+
+    @property
     def replacement_patterns(self):
         """A mapping of replacement patterns (name/repl) from config file.
 
@@ -251,6 +265,39 @@ class Config(Hashable):
         return "<Config(path={0.configpath}, raw={0.raw})".format(self)
 
     __repr__ = __str__
+
+    def filter_files(self, required_groups, required_files):
+        """Filter and return only those files which are required.
+
+        This uses groups and ``required_files`` parameter filtering.
+
+        :param list[str] required_groups: A list of mandatory groups
+        :param list[str] required_files: A list of mandatory files
+        :return: A list of files after filtering.
+        :rtype: list[:py:class:`scd.files.File`]
+        """
+        required_files = {os.path.abspath(item) for item in required_files}
+        if required_groups:
+            required_groups = [
+                os.path.join(self.project_directory, value)
+                for key, value in self.groups.items()
+                if key in required_groups]
+
+        def filterfunc(item):
+            if required_groups:
+                for glob in required_groups:
+                    if fnmatch.fnmatch(item.path, glob):
+                        break
+                else:
+                    return False
+            if required_files:
+                return item.path in required_files
+            return True
+
+        files = filter(filterfunc, self.files)
+        files = list(files)
+
+        return files
 
 
 def get_parsers():

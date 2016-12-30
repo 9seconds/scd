@@ -100,10 +100,11 @@ def main():
     for fobj in OPTIONS.files:
         fobj.close()
 
-    if not scd.files.validate_access(config.files):
+    all_files = config.filter_files(OPTIONS.group, OPTIONS.files)
+    if not scd.files.validate_access(all_files):
         logging.error("Cannot process all files, so nothing to do.")
 
-    for fileobj in filter_files(config.files, OPTIONS.files):
+    for fileobj in all_files:
         logging.info("Start to process %s", fileobj.path)
         logging.debug("File object: %s", fileobj)
         process_file(fileobj, config)
@@ -146,6 +147,11 @@ def get_options():
         nargs=argparse.ZERO_OR_MORE,
         type=argparse_extra_context_var,
         help="Additional context variables. Format is key=value.")
+    parser.add_argument(
+        "-g", "--group",
+        nargs=argparse.ZERO_OR_MORE,
+        default=[],
+        help="groups to use for additional filtering.")
 
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument(
@@ -175,26 +181,6 @@ def argparse_extra_context_var(arg):
         raise argparse.ArgumentTypeError(
             "context var definition should be in form key=value.")
     return arg.split("=", 1)
-
-
-def filter_files(all_files, required):
-    """Function which takes files, defined in config and limits them by CLI.
-
-    If ``required`` parameters is empty, then ``all_files`` will be
-    returned.
-
-    :param all_files: Files, taken from config.
-    :type all_files: list[:py:class:`scd.files.File`]
-    :param list[str] required: A list of files, defined in CLI (may be
-        relative).
-    :return: A list of files which actually required to be processed
-    :rtype: list[:py:class:`scd.files.File`]
-    """
-    if not required:
-        return all_files
-
-    required = {os.path.abspath(path.name) for path in required}
-    return [fileobj for fileobj in all_files if fileobj.path in required]
 
 
 def process_file(fileobj, config):

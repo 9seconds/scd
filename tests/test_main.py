@@ -70,19 +70,6 @@ def test_guess_configfile(options, chdir_to_current):
         assert configfile == ffp.name
 
 
-def test_filter_files_all(chdir_to_tmpproject, conf):
-    assert {
-        obj.filename for obj in scd.main.filter_files(conf.files, [])} == \
-        {obj.filename for obj in conf.files}
-
-
-def test_filer_files_required(chdir_to_tmpproject, conf):
-    with open("full_version") as ffp:
-        assert {
-            obj.filename for obj in scd.main.filter_files(
-                conf.files, [ffp])} == {"full_version"}
-
-
 def test_main(chdir_to_tmpproject, conf, cliargs):
     sys.argv.extend(["-c", "config.json"])
 

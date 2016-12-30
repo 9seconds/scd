@@ -9,6 +9,10 @@ defaults:
   search: pep440
   replacement: full
 
+groups:
+  code: "scd/**.py"
+  docs: "docs/**"
+
 files:
   setup.py:
     - search: setuppy
