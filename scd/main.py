@@ -91,6 +91,10 @@ def main():
     config = scd.config.parse(guess_configfile())
     logging.info("Version is %s", config.version.full)
 
+    if OPTIONS.replace_version:
+        print(config.version.full)
+        return
+
     for fobj in OPTIONS.files:
         fobj.close()
 
@@ -113,26 +117,6 @@ def get_options():
         description=DESCRIPTION,
         epilog=EPILOG)
 
-    verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument(
-        "-d", "--debug",
-        action="store_true",
-        default=False,
-        help="run in debug mode")
-    verbosity.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="run tool in verbose mode")
-    parser.add_argument(
-        "-n", "--dry-run",
-        action="store_true",
-        default=False,
-        help="make dry run, do not change anything.")
-    parser.add_argument(
-        "-c", "--config",
-        metavar="CONFIG_PATH",
-        default=None,
-        help="Path to the config. By default autodiscovery will be performed.")
     parser.add_argument(
         "-V", "--own-version",
         default=False,
@@ -143,6 +127,28 @@ def get_options():
         default=False,
         action="store_true",
         help="print version to replace to.")
+    parser.add_argument(
+        "-n", "--dry-run",
+        action="store_true",
+        default=False,
+        help="make dry run, do not change anything.")
+    parser.add_argument(
+        "-c", "--config",
+        metavar="CONFIG_PATH",
+        default=None,
+        help="Path to the config. By default autodiscovery will be performed.")
+
+    verbosity = parser.add_mutually_exclusive_group()
+    verbosity.add_argument(
+        "-d", "--debug",
+        action="store_true",
+        default=False,
+        help="run in debug mode")
+    verbosity.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="run tool in verbose mode")
+
     parser.add_argument(
         "files",
         metavar="FILE_PATH",
