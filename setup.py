@@ -2,6 +2,8 @@
 """Setuptools for scd."""
 
 
+import os.path
+
 import setuptools
 
 
@@ -15,11 +17,15 @@ REQUIREMENTS = [
 """Requirements for scd project."""
 
 
+with open(os.path.join(os.path.dirname(__file__), "README.rst"), "rt") as rfp:
+    long_description = rfp.read()
+
+
 setuptools.setup(
     name="scd",
     version="0.0.1",
     description="Something Completely different",
-    long_description="",
+    long_description=long_description,
     author="Sergey Arkhipov",
     author_email="nineseconds@yandex.ru",
     maintainer="Sergey Arkhipov",
