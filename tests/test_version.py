@@ -58,6 +58,7 @@ class VersionTest(object):
                 "scheme": self.SCHEME,
                 "number": "1.2.3"
             },
+            "defaults": {"search": "semver", "replacement": "full"},
             "files": {}
         }
         self.config = scd.config.Config(pytest.faux.gen_alpha(), config,

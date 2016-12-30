@@ -52,7 +52,7 @@ else:
     colorama.init(autoreset=True)
 
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __version__ = __version__.split(".")
 """Identifier of the current version.
 

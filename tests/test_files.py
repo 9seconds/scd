@@ -25,6 +25,7 @@ def minimal_config():
             "scheme": "semver",
             "number": "1.2.3-pre1+build10"
         },
+        "defaults": {"search": "semver", "replacement": "full"},
         "files": {}
     }
     return scd.config.Config(pytest.faux.gen_alpha(), config, {})
