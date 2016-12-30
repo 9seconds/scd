@@ -638,7 +638,7 @@ class PEP440(Version):
 
     @property
     def prerelease_type(self):
-        """Type of the prerelase
+        """Type of the prerelase.
 
         For version ``1483072998!1.2.3rc3.post13.dev2+5afe90c.linux`` it
         returns rc.

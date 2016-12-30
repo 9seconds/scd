@@ -4,7 +4,7 @@
 bandit
 fauxfactory
 flake8
-flake8-bugbear
+flake8-bugbear; python_version>='3.5'
 flake8-builtins
 flake8-coding
 flake8_comprehensions
