@@ -23,45 +23,45 @@ totally equialent.
 .. code-block:: yaml
   :linenos:
 
-   version:
-     number: 1.2.3
-     scheme: semver
+  version:
+    number: 1.2.3
+    scheme: semver
 
-   search_patterns:
-     full: "{{ full }}"
+  search_patterns:
+    full: "{{ full }}"
 
-   replacement_patterns:
-     full: "{{ full }}"
+  replacement_patterns:
+    full: "{{ full }}"
 
-   defaults:
-     search: full
-     replace: full
+  defaults:
+    search: full
+    replace: full
 
-   files:
-     setup.py:
-       - default
+  files:
+    setup.py:
+      - default
 
 **TOML**:
 
 .. code-block:: toml
   :linenos:
 
-   [version]
-   number = "1.2.3"
-   scheme = "semver"
+  [version]
+  number = "1.2.3"
+  scheme = "semver"
 
-   [search_patterns]
-   full = "{{ full }}"
+  [search_patterns]
+  full = "{{ full }}"
 
-   [replacement_patterns]
-   full = "{{ full }}"
+  [replacement_patterns]
+  full = "{{ full }}"
 
-   [defaults]
-   search = "full"
-   replace = "full"
+  [defaults]
+  search = "full"
+  replace = "full"
 
-   [files]
-   "setup.py" = ["default"]
+  [files]
+  "setup.py" = ["default"]
 
 
 **JSON**:
@@ -69,25 +69,25 @@ totally equialent.
 .. code-block:: json
   :linenos:
 
-   {
-       "version": {
-           "number": "1.2.3",
-           "scheme": "semver"
-       },
-       "search_patterns": {
-           "full": "{{ full }}"
-       },
-       "replacement_patterns": {
-           "full": "{{ full }}"
-       },
-       "defaults": {
-           "search": "full",
-           "replace": "full"
-       },
-       "files": {
-           "setup.py": ["default"]
-       }
-   }
+  {
+      "version": {
+          "number": "1.2.3",
+          "scheme": "semver"
+      },
+      "search_patterns": {
+          "full": "{{ full }}"
+      },
+      "replacement_patterns": {
+          "full": "{{ full }}"
+      },
+      "defaults": {
+          "search": "full",
+          "replace": "full"
+      },
+      "files": {
+          "setup.py": ["default"]
+      }
+  }
 
 I hope you get an idea: all these formats are representing
 the same datastructure. If you are familiar with `JSON Schema
@@ -101,6 +101,11 @@ the same datastructure. If you are familiar with `JSON Schema
       "type": "object",
       "required": ["version", "defaults", "files"],
       "properties": {
+          "config": {
+              "type": "number",
+              "minimum": 1,
+              "multipleOf": 1.0
+          },
           "version": {
               "type": "object",
               "required": ["scheme", "number"],
@@ -197,37 +202,39 @@ Full Example
 .. code-block:: yaml
   :linenos:
 
-   version:
-     number: 1.0.1
-     scheme: semver
+  config: 1
 
-   search_patterns:
-     full: "{{ semver }}"
-     vfull: "v{{ semver }}"
-     major_minor_block: "\\d+\\.\\d+(?=\\s\\#\\sBUMPVERSION)"
+  version:
+    number: 1.0.1
+    scheme: semver
 
-   replacement_patterns:
-     full: "{{ full }}"
-     major_minor: "{{ major }}.{{ minor }}"
-     major_minor_p: "{{ major }}.{{ minor }}{% if patch %}.{{ patch }}{% endif %}"
+  search_patterns:
+    full: "{{ semver }}"
+    vfull: "v{{ semver }}"
+    major_minor_block: "\\d+\\.\\d+(?=\\s\\#\\sBUMPVERSION)"
 
-   defaults:
-     search: full
-     replace: full
+  replacement_patterns:
+    full: "{{ full }}"
+    major_minor: "{{ major }}.{{ minor }}"
+    major_minor_p: "{{ major }}.{{ minor }}{% if patch %}.{{ patch }}{% endif %}"
 
-   groups:
-     code: 'scd/.*?\.py'
-     docs: 'docs/.*?'
+  defaults:
+    search: full
+    replace: full
 
-   files:
-     setup.py:
-       - search_raw: "(?>=version\\s=\\s\\\"){{ full }}"
-     docs/conf.py:
-       - default
-       - search: vfull
-         replace: major_minor_p
-       - search: major_minor_block
-         replace_raw: "{{ next_major }}"
+  groups:
+    code: 'scd/.*?\.py'
+    docs: 'docs/.*?'
+
+  files:
+    setup.py:
+      - search_raw: "(?>=version\\s=\\s\\\"){{ full }}"
+    docs/conf.py:
+      - default
+      - search: vfull
+        replace: major_minor_p
+      - search: major_minor_block
+        replace_raw: "{{ next_major }}"
 
 
 Shortest Example
@@ -236,17 +243,17 @@ Shortest Example
 .. code-block:: yaml
   :linenos:
 
-    version:
-      number: 1.0.1
-      scheme: semver
+  version:
+    number: 1.0.1
+    scheme: semver
 
-    defaults:
-      search: semver
-      replace: base
+  defaults:
+    search: semver
+    replace: base
 
-    files:
-      setup.py:
-        - default
+  files:
+    setup.py:
+      - default
 
 So, as you can see, config can be large and can be small. It is up to
 you what to choose.
@@ -265,6 +272,19 @@ Your guessing is correct, it is `Jinja2 <http://jinja.pocoo.org/>`_
 templates. Template context variables are depended on choosen version
 scheme, you can get a list of them in `Predefined Template Context`_.
 
+
+``config``
+----------
+
+``config`` is a numeric version (integers, please) of the config format.
+This is the first field processed by scd therefore it is possible to
+have absolutely different schemas in future.
+
+This field is responsible for config schema version. Sometimes (probably
+in future) we will bring (definitely will) some non-backward compatible
+changes in schema and we will differ configs by numbers.
+
+This field is optional in 1.x versions, it implicitly equal to 1.
 
 
 ``version``
@@ -493,17 +513,17 @@ config like:
 .. code-block:: yaml
   :linenos:
 
-    version:
-      number: 1.0.1
-      scheme: semver
+  version:
+    number: 1.0.1
+    scheme: semver
 
-    defaults:
-      search: semver
-      replace: base
+  defaults:
+    search: semver
+    replace: base
 
-    files:
-      setup.py:
-        - default
+  files:
+    setup.py:
+      - default
 
 In that case ``semver`` search pattern and ``base`` replacement will be
 used for :file:`setup.py`.

@@ -13,7 +13,7 @@ import scd.config
 
 
 def test_ok(scheme, config, tmp_project):
-    conf = scd.config.Config(
+    conf = scd.config.make_config(
         tmp_project.join("config.json").strpath, config, {"k": "v"})
 
     assert conf.configpath == tmp_project.join("config.json").strpath
@@ -54,7 +54,8 @@ def test_invalid_schema(errors, config, tmp_project):
 
     assert len(errors) == len(scd.config.Config.validate_schema(config))
     with pytest.raises(ValueError):
-        scd.config.Config(tmp_project.join("config.json").strpath, config, {})
+        scd.config.V1Config(
+            tmp_project.join("config.json").strpath, config, {})
 
 
 @pytest.mark.parametrize("fileext", ("yaml", "json", "toml"))

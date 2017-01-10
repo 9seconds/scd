@@ -11,6 +11,7 @@ import json
 import logging
 import os.path
 import re
+import warnings
 
 import jsonschema
 import six
@@ -33,11 +34,16 @@ Parser = collections.namedtuple("Parser", ["name", "func"])
     config as a first argument.
 """
 
-CONFIG_SCHEMA = {
+V1_CONFIG_SCHEMA = {
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
     "required": ["version", "defaults", "files"],
     "properties": {
+        "config": {
+            "type": "number",
+            "minimum": 1,
+            "multipleOf": 1.0
+        },
         "version": {
             "type": "object",
             "required": ["scheme", "number"],
@@ -114,8 +120,10 @@ CONFIG_SCHEMA = {
         }
     }
 }
-"""`JSON Schema <http://json-schema.org/>`_ of parsed configuration,
-valid by `Draft V4 <https://tools.ietf.org/html/draft-wright-json-schema-00>`_.
+"""`JSON Schema <http://json-schema.org/>`_ of parsed configuration (ver 1).
+
+This valid by `Draft V4
+<https://tools.ietf.org/html/draft-wright-json-schema-00>`_.
 """
 
 
@@ -132,15 +140,15 @@ class Config(Hashable):
     :param dict config: Parsed configuration.
     :param dict[str, str] extra_context: Additional context to use
         in templates.
-    :raises ValueError: if configuration is not valid to
-        :py:data:`CONFIG_SCHEMA`.
+    :raises ValueError: if configuration is not valid to schema.
     """
 
-    __slots__ = "raw", "configpath", "extra_context"
+    SCHEMA = {}
+    """JSON schema to comply with."""
 
     @staticmethod
     def validate_schema(config):
-        """Validate parsed content to comply with :py:data:`CONFIG_SCHEMA`.
+        """Validate parsed content to comply with JSON Schema.
 
         :param dict config: Parsed configuration.
         :return: A list of errors, found during verification. If list is
@@ -148,11 +156,14 @@ class Config(Hashable):
         :rtype: list[str]
         """
         validator = jsonschema.Draft4Validator(
-            CONFIG_SCHEMA, format_checker=jsonschema.FormatChecker())
+            V1_CONFIG_SCHEMA, format_checker=jsonschema.FormatChecker())
 
         return [
             "{0}: {1}".format("/".join(err.path), err.message)
             for err in validator.iter_errors(config)]
+
+    def __hash__(self):
+        return hash(self.configpath)
 
     def __init__(self, configpath, config, extra_context):
         errors = self.validate_schema(config)
@@ -160,15 +171,19 @@ class Config(Hashable):
             for error in errors:
                 logging.error("Error in config: %s", error)
             logging.debug("Schema is \n%s",
-                          json.dumps(CONFIG_SCHEMA, sort_keys=True, indent=4))
+                          json.dumps(self.SCHEMA, sort_keys=True, indent=4))
             raise ValueError("Incorrect config")
 
         self.raw = config
         self.configpath = os.path.abspath(configpath)
         self.extra_context = extra_context
 
-    def __hash__(self):
-        return hash(self.configpath)
+    def __str__(self):
+        return (
+            "<{0.__class__.__name__}(path={0.configpath}, "
+            "raw={0.raw})".format(self))
+
+    __repr__ = __str__
 
     @property
     def project_directory(self):
@@ -178,6 +193,12 @@ class Config(Hashable):
         :rtype: str
         """
         return os.path.dirname(self.configpath)
+
+
+class V1Config(Config):
+    """Implementation of :py:class:`Config` for config version 1."""
+
+    SCHEMA = V1_CONFIG_SCHEMA
 
     @property
     def version_scheme(self):
@@ -260,11 +281,6 @@ class Config(Hashable):
         :rtype: dict[str, str]
         """
         return self.raw.get("defaults", {})
-
-    def __str__(self):
-        return "<Config(path={0.configpath}, raw={0.raw})".format(self)
-
-    __repr__ = __str__
 
     def filter_files(self, required_groups, required_files):
         """Filter and return only those files which are required.
@@ -408,6 +424,36 @@ def parse(fileobj, extra_context):
         except Exception as exc:
             logging.debug("Cannot parse %s: %s", parser.name, exc)
         else:
-            return Config(fileobj.name, parsed, extra_context)
+            return make_config(fileobj.name, parsed, extra_context)
 
     raise ValueError("Cannot parse {0}".format(fileobj.name))
+
+
+def make_config(filename, content, extra_context):
+    """Function to generate config based on incoming parameters.
+
+    This function does validation of config version.
+
+    :param str filename: Path to the configuration file (can be
+        relative).
+    :param dict content: Parsed configuration.
+    :param dict[str, str] extra_context: Additional context to use
+        in templates.
+    :raises ValueError: if config version is not supported.
+    """
+    if not isinstance(content, dict):
+        raise ValueError("Incorrect config format!")
+
+    if "config" not in content:
+        warnings.warn(
+            "Please, set explicit version of config in your "
+            "configuration file. It is not mandatory yet, but will "
+            "in future. Implicit version is always 1, not latest.",
+            FutureWarning
+        )
+
+    config_version = content.get("config", 1)
+    if config_version == 1:
+        return V1Config(filename, content, extra_context)
+
+    raise ValueError("Unknown config version %s", config_version)
