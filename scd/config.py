@@ -11,6 +11,7 @@ import json
 import logging
 import os.path
 import re
+import warnings
 
 import jsonschema
 import six
@@ -443,6 +444,14 @@ def make_config(filename, content, extra_context):
     """
     if not isinstance(content, dict):
         raise ValueError("Incorrect config format!")
+
+    if "config" not in content:
+        warnings.warn(
+            "Please, set explicit version of config in your "
+            "configuration file. It is not mandatory yet, but will "
+            "in future. Implicit version is always 1, not latest.",
+            FutureWarning
+        )
 
     config_version = content.get("config", 1)
     if config_version == 1:
