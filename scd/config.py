@@ -195,7 +195,6 @@ class Config(Hashable):
         return os.path.dirname(self.configpath)
 
 
-@six.python_2_unicode_compatible
 class V1Config(Config):
     """Implementation of :py:class:`Config` for config version 1."""
 
