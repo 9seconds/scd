@@ -137,6 +137,7 @@ class Config(Hashable):
 
     :param str configpath: Path to the configuration file (can be
         relative).
+    :param str or None version_scheme: Explicit version scheme to use.
     :param dict config: Parsed configuration.
     :param dict[str, str] extra_context: Additional context to use
         in templates.
@@ -165,7 +166,7 @@ class Config(Hashable):
     def __hash__(self):
         return hash(self.configpath)
 
-    def __init__(self, configpath, config, extra_context):
+    def __init__(self, configpath, version_scheme, config, extra_context):
         errors = self.validate_schema(config)
         if errors:
             for error in errors:
@@ -177,6 +178,7 @@ class Config(Hashable):
         self.raw = config
         self.configpath = os.path.abspath(configpath)
         self.extra_context = extra_context
+        self.explicit_version_scheme = version_scheme
 
     def __str__(self):
         return (
@@ -209,6 +211,9 @@ class V1Config(Config):
         :return: Version scheme
         :rtype: str
         """
+        if self.explicit_version_scheme:
+            return self.explicit_version_scheme
+
         return self.raw["version"].get("scheme", "semver")
 
     @property
@@ -400,11 +405,12 @@ def get_toml_parser():
         return toml.loads
 
 
-def parse(fileobj, extra_context):
+def parse(fileobj, version_scheme, extra_context):
     """Function which parses given file-like object with config data.
 
     :param fileobj: Open file object for parsing.
     :type fileobj: file-like object
+    :param str or None version_scheme: Explicit version scheme to use.
     :param dict[str, str] extra_context: Additional context to use
         in templates.
     :return: Parsed config
@@ -424,18 +430,20 @@ def parse(fileobj, extra_context):
         except Exception as exc:
             logging.debug("Cannot parse %s: %s", parser.name, exc)
         else:
-            return make_config(fileobj.name, parsed, extra_context)
+            return make_config(
+                fileobj.name, version_scheme, parsed, extra_context)
 
     raise ValueError("Cannot parse {0}".format(fileobj.name))
 
 
-def make_config(filename, content, extra_context):
+def make_config(filename, version_scheme, content, extra_context):
     """Function to generate config based on incoming parameters.
 
     This function does validation of config version.
 
     :param str filename: Path to the configuration file (can be
         relative).
+    :param str or None version_scheme: Explicit version scheme to use.
     :param dict content: Parsed configuration.
     :param dict[str, str] extra_context: Additional context to use
         in templates.
@@ -454,6 +462,6 @@ def make_config(filename, content, extra_context):
 
     config_version = content.get("config", 1)
     if config_version == 1:
-        return V1Config(filename, content, extra_context)
+        return V1Config(filename, version_scheme, content, extra_context)
 
     raise ValueError("Unknown config version %s", config_version)

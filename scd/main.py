@@ -90,6 +90,7 @@ def main():
 
     config = scd.config.parse(
         guess_configfile(),
+        OPTIONS.version_scheme,
         dict(OPTIONS.extra_context))
     logging.info("Version is %s", config.version.full)
 
@@ -152,6 +153,11 @@ def get_options():
         nargs=argparse.ZERO_OR_MORE,
         default=[],
         help="groups to use for additional filtering.")
+    parser.add_argument(
+        "-s", "--version-scheme",
+        default=None,
+        choices=sorted(scd.utils.get_version_plugins()),
+        help="override version-scheme from config.")
 
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument(

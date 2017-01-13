@@ -1,11 +1,11 @@
 config: 1
 
 version:
-  scheme: git_pep440
+  scheme: pep440
   number: 1.1.0
 
 search_patterns:
-  setuppy: "(?<=version=\\\"){{ git_pep440 }}"
+  setuppy: "(?<=version=\\\"){{ pep440 }}"
 
 defaults:
   search: pep440
