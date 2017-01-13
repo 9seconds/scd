@@ -42,7 +42,7 @@ def chdir_to_tmpproject(tmp_project):
 
 @pytest.fixture
 def conf(config):
-    return scd.config.make_config(pytest.faux.gen_alpha(), config, {})
+    return scd.config.make_config(pytest.faux.gen_alpha(), None, config, {})
 
 
 def test_catch_exception_ok(options):

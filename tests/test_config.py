@@ -14,7 +14,7 @@ import scd.config
 
 def test_ok(scheme, config, tmp_project):
     conf = scd.config.make_config(
-        tmp_project.join("config.json").strpath, config, {"k": "v"})
+        tmp_project.join("config.json").strpath, None, config, {"k": "v"})
 
     assert conf.configpath == tmp_project.join("config.json").strpath
     assert conf.project_directory == tmp_project.strpath
@@ -55,24 +55,24 @@ def test_invalid_schema(errors, config, tmp_project):
     assert len(errors) == len(scd.config.Config.validate_schema(config))
     with pytest.raises(ValueError):
         scd.config.V1Config(
-            tmp_project.join("config.json").strpath, config, {})
+            tmp_project.join("config.json").strpath, None, config, {})
 
 
 @pytest.mark.parametrize("fileext", ("yaml", "json", "toml"))
 def test_parsing_ok(fileext, config, tmp_project):
     with tmp_project.join("config." + fileext).open() as ffp:
-        conf = scd.config.parse(ffp, {})
+        conf = scd.config.parse(ffp, None, {})
     assert conf.raw == config
 
 
 def test_parsing_failed(tmp_project):
     with tmp_project.join("complex").open() as ffp, pytest.raises(ValueError):
-        scd.config.parse(ffp, {})
+        scd.config.parse(ffp, None, {})
 
 
 def test_parsing_bytes(tmp_project, config):
     tmp_project.join("config.json").write(json.dumps(config).encode("utf-8"))
     with tmp_project.join("config.json").open() as ffp:
-        conf = scd.config.parse(ffp, {})
+        conf = scd.config.parse(ffp, None, {})
 
     assert conf.raw == config
