@@ -61,8 +61,8 @@ class VersionTest(object):
             "defaults": {"search": "semver", "replacement": "full"},
             "files": {}
         }
-        self.config = scd.config.make_config(pytest.faux.gen_alpha(), config,
-                                             {"k": "v"})
+        self.config = scd.config.make_config(pytest.faux.gen_alpha(), None,
+                                             config, {"k": "v"})
 
 
 class TestSemVer(VersionTest):

@@ -28,13 +28,13 @@ def minimal_config():
         "defaults": {"search": "semver", "replacement": "full"},
         "files": {}
     }
-    return scd.config.make_config(pytest.faux.gen_alpha(), config, {})
+    return scd.config.make_config(pytest.faux.gen_alpha(), None, config, {})
 
 
 @pytest.fixture
 def full_config(config, tmp_project):
     config_file = tmp_project.join("config.json").strpath
-    return scd.config.make_config(config_file, config, {"k": "v"})
+    return scd.config.make_config(config_file, None, config, {"k": "v"})
 
 
 @pytest.fixture

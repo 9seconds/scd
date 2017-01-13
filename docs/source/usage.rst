@@ -27,10 +27,20 @@ CLI Arguments and Options
                            performed.
      -x [CONTEXT_VAR [CONTEXT_VAR ...]], --extra-context [CONTEXT_VAR [CONTEXT_VAR ...]]
                            Additional context variables. Format is key=value.
+     -s {git_pep440,git_semver,pep440,semver}, --version-scheme {git_pep440,git_semver,pep440,semver}
+                           override version-scheme from config.
      -d, --debug           run in debug mode
      -v, --verbose         run tool in verbose mode
 
 I have no idea what to add here. You can get this output with ``scd -h``.
+
+
+Explicit Scheme
+---------------
+
+Sometimes you need to override scheme from config file. For example, you
+may want to use ``pep440`` for versioning but in CI system (or any build
+system) you need to use ``git_pep440``. This option is for you.
 
 
 Debug and Verbose Mode
