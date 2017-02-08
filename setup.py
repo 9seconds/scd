@@ -11,7 +11,7 @@ REQUIREMENTS = [
     "six>=1.10",
     "packaging>=16,<17",
     "semver>=2,<3",
-    "jsonschema>=2.5,<2.6",
+    "jsonschema>=2.5,<3",
     "jinja2>=2.6,<3"
 ]
 """Requirements for scd project."""
@@ -23,7 +23,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.rst"), "rt") as rfp:
 
 setuptools.setup(
     name="scd",
-    version="1.2.0",
+    version="1.2.1",
     description="Something Completely different",
     long_description=long_description,
     author="Sergey Arkhipov",
