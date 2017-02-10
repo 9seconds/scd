@@ -297,7 +297,8 @@ class V1Config(Config):
         :return: A list of files after filtering.
         :rtype: list[:py:class:`scd.files.File`]
         """
-        required_files = {os.path.abspath(item) for item in required_files}
+        required_files = {
+            os.path.abspath(item.name) for item in required_files}
         if required_groups:
             required_groups = [
                 os.path.join(self.project_directory, value + "$")

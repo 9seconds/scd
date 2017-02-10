@@ -23,7 +23,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.rst"), "rt") as rfp:
 
 setuptools.setup(
     name="scd",
-    version="1.2.1",
+    version="1.2.2",
     description="Something Completely different",
     long_description=long_description,
     author="Sergey Arkhipov",

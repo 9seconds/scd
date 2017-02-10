@@ -2,7 +2,7 @@ config: 1
 
 version:
   scheme: pep440
-  number: 1.2.1
+  number: 1.2.2
 
 search_patterns:
   setuppy: "(?<=version=\\\"){{ pep440 }}"
