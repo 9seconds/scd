@@ -330,13 +330,13 @@ def get_parsers():
     """
     parsers = [Parser("JSON", get_json_parser())]
 
-    yaml_parser = get_yaml_parser()
-    if yaml_parser:
-        parsers.append(Parser("YAML", yaml_parser))
-
     toml_parser = get_toml_parser()
     if toml_parser:
         parsers.append(Parser("TOML", toml_parser))
+
+    yaml_parser = get_yaml_parser()
+    if yaml_parser:
+        parsers.append(Parser("YAML", yaml_parser))
 
     return parsers
 

@@ -12,6 +12,7 @@ import os.path
 import re
 
 import jinja2
+import jinja2.meta
 import six
 
 import scd.utils
@@ -50,9 +51,17 @@ class SearchReplace(Hashable):
         :param version: Version instance, where template takes context.
         :type version: :py:class:`scd.version.Version`
         :return: Rendered template, ready to insert.
+        :raises ValueError: if there is no enough context to render template.
         :rtype: str
         """
-        return replace.render(**version.context)
+        context = version.context
+        missed_names = replace.required_vars - set(context)
+        if missed_names:
+            logging.error("Cannot find replacement vars %s",
+                          sorted(missed_names))
+            raise ValueError("Cannot find replacement vars")
+
+        return replace.render(**context)
 
     def __init__(self, search, replace):
         self.search = search
@@ -276,7 +285,11 @@ def make_template(template):
     :return: Correct template instance, based on given text.
     :rtype: :py:class:`jinja2.Template`
     """
-    return jinja2.Template(template)
+    tpl = jinja2.Template(template)
+    tpl.required_vars = jinja2.meta.find_undeclared_variables(
+        tpl.environment.parse(template))
+
+    return tpl
 
 
 @scd.utils.lru_cache()
@@ -302,6 +315,12 @@ def make_pattern(base_pattern, config):
         patterns[name] = data.REGEXP.pattern
 
     pattern = make_template(base_pattern)
+    missed_names = pattern.required_vars - set(patterns)
+    if missed_names:
+        logging.error("Cannot find required names %s in pattern",
+                      sorted(missed_names))
+        raise ValueError("Missed pattern names")
+
     pattern = pattern.render(**patterns)
     try:
         pattern = re.compile(pattern, re.VERBOSE | re.UNICODE)

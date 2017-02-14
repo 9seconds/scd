@@ -12,7 +12,7 @@ import toml
 import yaml
 
 
-@pytest.fixture(params=["git_pep440", "git_semver", "pep440", "semver"])
+@pytest.fixture(params=["pep440", "semver"])
 def scheme(request):
     return request.param
 
@@ -54,6 +54,7 @@ def tmp_project(scheme, tmpdir):
 @pytest.fixture
 def config(scheme, tmp_project, tmpdir):
     new_config = {
+        "config": 1,
         "version": {
             "scheme": scheme,
             "number": "1.2.3"
@@ -70,12 +71,7 @@ def config(scheme, tmp_project, tmpdir):
                     "search": "full_version_w_comment",
                     "replace_raw": "{{ major }}.{{ patch }}.{{ minor }}"
                 },
-                {
-                    "search_raw": "{{ major }}\.{{ minor }}\.{{ patch }}"
-                    "(?=\s{2}\#\sMAJOR_MINOR_PATCH)",
-                    "replace": "major2"
-                },
-                {"search_raw": "{{ major }}(?=.*?\#\sMAJOR)"}
+                {"replace": "major2", "search": "full"},
             ],
             "vcomplex": [
                 {"search": "vsearch", "replace": "vreplace"}
